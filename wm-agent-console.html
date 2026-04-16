@@ -632,9 +632,9 @@
                         </div>
                     </div>
                     <div class="kpi-card" id="kpi-replen">
-                        <div class="kpi-label">Replen WTs</div>
+                        <div class="kpi-label">Replen HU/hr</div>
                         <div class="kpi-value">
-                            <span id="val-replen">0</span><span class="kpi-status">/hr</span>
+                            <span id="val-replen">0</span><span class="kpi-status"></span>
                         </div>
                     </div>
                     <div class="kpi-card" id="kpi-aging">
@@ -689,19 +689,19 @@
                 delay: 0,
                 agent: 'WEATHER AGENT',
                 agentClass: 'btp',
-                message: '06:14:03 — Severe winter storm advisory issued for JFK corridor, NY. API source: NOAA Weather Service. Confidence: 94.2%. Forecasted start: T-8h. Cross-referencing S/4HANA open outbound delivery schedule...'
+                message: '06:14:03 — ESCALATION: Nor\'easter making landfall at DC-North (JFK corridor) within 2 hours. Confidence: 94.2%. DC-North operations suspended. Emergency STO-2026-00847 dispatched 36h ago — 34 trailers in transit, first wave arriving at DC-South receiving.'
             },
             {
                 delay: 600,
                 agent: 'WEATHER AGENT',
                 agentClass: 'btp',
-                message: '06:14:11 — Found 847 open outbound deliveries at DC-North. 312 scheduled for pick within 72h. Recommended action: Emergency stock transfer to DC-South (Orlando). Initiating S/4HANA stock transfer order STO-2024-00847.'
+                message: '06:14:11 — STO-2026-00847 cross-reference complete. 847 open outbound deliveries at DC-North. 312 scheduled for pick within 72h. First 12 trailers now docking at DC-South. Monitoring inbound surge impact on ZSTP-01 capacity.'
             },
             {
                 delay: 1200,
                 agent: 'EWM MONITOR',
                 agentClass: 's4hana',
-                message: '08:17:44 — DC-South inbound alert. Transfer order STO-2024-00847 active. 34 trailers dispatched from DC-North. 12 trailers docked at DC-South receiving. Beginning putaway task generation for storage type ZSTP-01 (Full Pallet).'
+                message: '08:17:44 — DC-South inbound alert. Transfer order STO-2026-00847 active. 34 trailers dispatched from DC-North. 12 trailers docked at DC-South receiving. Beginning putaway task generation for storage type ZSTP-01 (Full Pallet).'
             },
             {
                 delay: 1800,
@@ -726,7 +726,7 @@
                 delay: 3600,
                 agent: 'JOULE AGENT',
                 agentClass: 'good',
-                message: '08:34:32 — KPI STATUS: Putaway Utilization ZSTP-01: 92% 🔴 | Replen Throughput: 0 WTs/hr 🔴 | Outbound Aging: 23 orders 🔴 | Pick Face Availability: 34% 🔴',
+                message: '08:34:32 — KPI STATUS: Putaway Utilization ZSTP-01: 92% 🔴 | Replen Throughput: 0 HU/hr 🔴 | Outbound Aging: 23 orders 🔴 | Pick Face Availability: 34% 🔴',
                 messageClass: 'alert',
                 action: 'updateKPI'
             },
@@ -734,7 +734,7 @@
                 delay: 4200,
                 agent: 'JOULE AGENT',
                 agentClass: 'joule',
-                message: '08:34:35 — RECOMMENDATION A [HIGH]: Create temporary overflow bins. Designate trailer yard positions Y-01–Y-08 as storage type ZSTP-TMP. No system downtime required. Immediate capacity relief: +18%. Action: EWM bin extension → Supervisor approval required.'
+                message: '08:34:35 — RECOMMENDATION A [HIGH]: Create temporary overflow bins. Designate 16 trailer yard positions (Y-01–Y-16) as storage type ZSTP-TMP. Creates ~400 pallet slots. No system downtime required. Capacity relief: +17%. Action: EWM bin extension → Supervisor approval required.'
             },
             {
                 delay: 4800,
@@ -746,7 +746,7 @@
                 delay: 5400,
                 agent: 'JOULE AGENT',
                 agentClass: 'joule',
-                message: '08:34:39 — RECOMMENDATION C [MEDIUM]: Increase replenishment quantity. Current config: 1 HU/WT. Equipment can handle 2 HU/trip. Config change doubles replen throughput with same labor headcount. Action: EWM replen qty change ZSTP-01→ZSTP-02 → Supervisor approval required.'
+                message: '08:34:39 — RECOMMENDATION C [MEDIUM]: Increase replenishment quantity per WT. Current EWM config: 1 HU/WT. Forklift and aisle width support 2 HU per trip. Doubling HU-per-WT parameter means each completed task moves 2× the material — 4 WTs/hr × 2 HU = 8 HU/hr vs. baseline 4 HU/hr. Action: EWM replen qty change ZSTP-01→ZSTP-02 → Supervisor approval required.'
             },
             {
                 delay: 6000,
@@ -771,14 +771,14 @@
                 delay: 7800,
                 agent: 'SUPERVISOR',
                 agentClass: 'supervisor',
-                message: '08:42:11 — ✅ Rec A: APPROVED. Create ZSTP-TMP bins Y-01–Y-08.',
+                message: '08:42:11 — ✅ Rec A: APPROVED. Create ZSTP-TMP bins Y-01–Y-16.',
                 action: 'approveA'
             },
             {
                 delay: 8400,
                 agent: 'EWM EXECUTE',
                 agentClass: 'exec',
-                message: '08:42:12 — Executing: 8 temporary bins created in EWM. Storage type ZSTP-TMP active. Putaway tasks redirecting...',
+                message: '08:42:12 — Executing: 16 temporary bins created in EWM. Storage type ZSTP-TMP active. Putaway tasks redirecting...',
                 messageClass: 'success'
             },
             {
@@ -792,7 +792,7 @@
                 delay: 9600,
                 agent: 'EWM EXECUTE',
                 agentClass: 'exec',
-                message: '08:43:04 — Executing: 48 replenishment WTs generated for top 40 SKUs. Labor reassignment: 4 workers → replen workflow. First WTs appearing in mobile RF devices.',
+                message: '08:43:04 — Executing: 48 replenishment WTs generated for top 40 SKUs. Labor reassignment: 4 workers → replen workflow. First WTs now moving 2 HU each (post-config). First WTs appearing in mobile RF devices.',
                 messageClass: 'success'
             },
             {
@@ -834,7 +834,7 @@
                 delay: 13200,
                 agent: 'JOULE AGENT',
                 agentClass: 'good',
-                message: '12:31:07 — ✅ KPI RECOVERY: Putaway Utilization ZSTP-01: 71% 🟡 (–21%) | Replen Throughput: 8 WTs/hr 🟢 (2× baseline) | Outbound Aging: 4 orders 🟡 (–19 orders) | Pick Face Availability: 82% 🟢 (+48%)',
+                message: '12:31:07 — ✅ KPI RECOVERY: Putaway Utilization ZSTP-01: 71% 🟡 (–21%) | Replen Throughput: 8 HU/hr (4 WTs × 2 HU) 🟢 (2× baseline) | Outbound Aging: 4 orders 🟡 (–19 orders) | Pick Face Availability: 82% 🟢 (+48%)',
                 messageClass: 'success',
                 action: 'updateKPIRecovery'
             },

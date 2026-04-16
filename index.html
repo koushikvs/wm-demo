@@ -292,29 +292,44 @@
       flex-grow: 1;
     }
 
-    /* Mockup */
+    /* Mockup thumbnails */
     .mockup {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       height: 160px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.04) 100%);
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #fafafa;
       position: relative;
       overflow: hidden;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
-
-    .mockup::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
-      animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
+    .mk-row { display: flex; gap: 5px; align-items: center; }
+    .mk-bar { height: 5px; border-radius: 3px; background: rgba(0,0,0,0.12); }
+    .mk-bar.accent { background: rgba(10,110,209,0.55); }
+    .mk-bar.red    { background: rgba(185,28,28,0.55); }
+    .mk-bar.green  { background: rgba(10,122,59,0.55); }
+    .mk-bar.purple { background: rgba(124,58,237,0.55); }
+    .mk-kpi { flex: 1; height: 32px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); background: #fff; display: flex; flex-direction: column; justify-content: center; padding: 4px 6px; gap: 3px; }
+    .mk-kpi .v { height: 7px; width: 50%; border-radius: 2px; background: rgba(185,28,28,0.6); }
+    .mk-kpi .l { height: 4px; width: 75%; border-radius: 2px; background: rgba(0,0,0,0.1); }
+    .mk-block { background: #fff; border: 1px solid rgba(0,0,0,0.07); border-radius: 5px; padding: 5px 6px; display: flex; flex-direction: column; gap: 3px; }
+    .mk-line { height: 4px; border-radius: 2px; background: rgba(0,0,0,0.1); }
+    .mk-agent { background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2); border-radius: 5px; padding: 4px 7px; display: flex; flex-direction: column; gap: 3px; }
+    .mk-tag { height: 4px; width: 40%; border-radius: 2px; background: rgba(124,58,237,0.5); }
+    .mk-chart { flex: 1; background: #fff; border: 1px solid rgba(0,0,0,0.07); border-radius: 5px; display: flex; align-items: flex-end; padding: 4px 5px; gap: 3px; }
+    .mk-chart-bar { flex: 1; border-radius: 2px 2px 0 0; }
+    .mk-area { flex: 1; background: rgba(10,110,209,0.08); border-radius: 5px; border: 1px solid rgba(10,110,209,0.15); position: relative; overflow: hidden; }
+    .mk-area::after { content:''; position:absolute; bottom:0; left:0; right:0; height:55%; background: linear-gradient(to top, rgba(185,28,28,0.25), transparent); clip-path: polygon(0 100%, 15% 60%, 35% 55%, 55% 40%, 75% 20%, 90% 5%, 100% 0%, 100% 100%); }
+    .mk-console-left { width: 40%; display: flex; flex-direction: column; gap: 4px; }
+    .mk-console-right { flex: 1; background: #111; border-radius: 5px; padding: 5px 6px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+    .mk-log { height: 4px; border-radius: 2px; }
+    .mk-log.blue   { background: rgba(10,110,209,0.8); }
+    .mk-log.purple { background: rgba(124,58,237,0.8); }
+    .mk-log.green  { background: rgba(10,122,59,0.8); }
+    .mk-log.dim    { background: rgba(255,255,255,0.15); }
 
     /* Systems Section */
     .systems-section {
@@ -456,7 +471,24 @@
         <h2 class="card-title">The Story</h2>
         <div class="card-subtitle">Narrative</div>
         <p class="card-description">Follow Warehouse Supervisor Maria Chen as a major snowstorm triggers an emergency stock transfer from DC-North (NY) to DC-South (Orlando). Watch three KPIs hit red simultaneously, and see how the SAP Joule agent detects root cause and restores operational flow in under 4 hours.</p>
-        <div class="mockup"></div>
+        <div class="mockup">
+          <div class="mk-row">
+            <div class="mk-bar accent" style="width:30%"></div>
+          </div>
+          <div class="mk-bar" style="width:70%;height:7px;background:rgba(0,0,0,0.55)"></div>
+          <div class="mk-bar" style="width:55%"></div>
+          <div class="mk-row" style="margin-top:4px">
+            <div class="mk-kpi"><div class="v"></div><div class="l"></div></div>
+            <div class="mk-kpi"><div class="v"></div><div class="l"></div></div>
+            <div class="mk-kpi"><div class="v" style="background:rgba(194,65,12,0.6)"></div><div class="l"></div></div>
+          </div>
+          <div class="mk-block" style="flex:1">
+            <div class="mk-bar accent" style="width:25%"></div>
+            <div class="mk-line" style="width:90%"></div>
+            <div class="mk-line" style="width:75%"></div>
+            <div class="mk-line" style="width:80%"></div>
+          </div>
+        </div>
       </a>
 
       <a href="/wm-agent-console.html" class="card orange">
@@ -464,7 +496,38 @@
         <h2 class="card-title">The Agent Console</h2>
         <div class="card-subtitle">Simulation</div>
         <p class="card-description">Watch the SAP Joule agent reason in real time — querying EWM storage bin data, identifying the replenishment bottleneck, and presenting Maria with five prioritized recommendations, each with impact estimates and a thumbs up/down action assignment.</p>
-        <div class="mockup"></div>
+        <div class="mockup" style="flex-direction:row;gap:6px;padding:8px;">
+          <div class="mk-console-left">
+            <div class="mk-block">
+              <div class="mk-bar red" style="width:30%"></div>
+              <div class="mk-bar" style="width:50%;height:8px;background:rgba(185,28,28,0.7)"></div>
+              <div class="mk-line" style="width:70%"></div>
+            </div>
+            <div class="mk-block">
+              <div class="mk-bar red" style="width:30%"></div>
+              <div class="mk-bar" style="width:50%;height:8px;background:rgba(185,28,28,0.7)"></div>
+              <div class="mk-line" style="width:60%"></div>
+            </div>
+            <div class="mk-agent">
+              <div class="mk-tag"></div>
+              <div class="mk-line" style="width:90%"></div>
+              <div class="mk-line" style="width:70%"></div>
+            </div>
+          </div>
+          <div class="mk-console-right">
+            <div class="mk-log blue" style="width:50%"></div>
+            <div class="mk-log dim" style="width:85%"></div>
+            <div class="mk-log dim" style="width:70%"></div>
+            <div class="mk-log purple" style="width:45%"></div>
+            <div class="mk-log dim" style="width:90%"></div>
+            <div class="mk-log dim" style="width:75%"></div>
+            <div class="mk-log green" style="width:55%"></div>
+            <div class="mk-log dim" style="width:80%"></div>
+            <div class="mk-log dim" style="width:65%"></div>
+            <div class="mk-log purple" style="width:40%"></div>
+            <div class="mk-log dim" style="width:95%"></div>
+          </div>
+        </div>
       </a>
 
       <a href="/wm-dashboard.html" class="card green">
@@ -472,7 +535,26 @@
         <h2 class="card-title">The Ops Dashboard</h2>
         <div class="card-subtitle">Intelligence</div>
         <p class="card-description">A live EWM operations intelligence view — putaway utilization, replenishment throughput, outbound delivery aging, and pick face availability across both distribution centers, updating as agent recommendations are applied.</p>
-        <div class="mockup"></div>
+        <div class="mockup">
+          <div class="mk-row">
+            <div class="mk-kpi"><div class="v"></div><div class="l"></div></div>
+            <div class="mk-kpi"><div class="v"></div><div class="l"></div></div>
+            <div class="mk-kpi"><div class="v" style="background:rgba(194,65,12,0.6)"></div><div class="l"></div></div>
+            <div class="mk-kpi"><div class="v"></div><div class="l"></div></div>
+          </div>
+          <div class="mk-row" style="flex:1;gap:6px;">
+            <div class="mk-area" style="flex:1.4"></div>
+            <div class="mk-chart">
+              <div class="mk-chart-bar" style="height:60%;background:rgba(10,122,59,0.6)"></div>
+              <div class="mk-chart-bar" style="height:60%;background:rgba(10,122,59,0.6)"></div>
+              <div class="mk-chart-bar" style="height:70%;background:rgba(10,122,59,0.6)"></div>
+              <div class="mk-chart-bar" style="height:55%;background:rgba(10,122,59,0.6)"></div>
+              <div class="mk-chart-bar" style="height:40%;background:rgba(194,65,12,0.6)"></div>
+              <div class="mk-chart-bar" style="height:25%;background:rgba(194,65,12,0.6)"></div>
+              <div class="mk-chart-bar" style="height:5%;background:rgba(185,28,28,0.7)"></div>
+            </div>
+          </div>
+        </div>
       </a>
     </div>
 
@@ -506,7 +588,7 @@
   </main>
 
   <footer>
-    <p>Warehouse Operations Agent · SAP Demo Suite · SAP Sapphire 2025</p>
+    <p>Warehouse Operations Agent · SAP Demo Suite · 2026</p>
   </footer>
 </body>
 </html>

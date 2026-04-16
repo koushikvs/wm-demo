@@ -708,7 +708,7 @@
       <div class="section-content">
         <div class="eyebrow">Chapter 1 · A day in the reimagined warehouse</div>
         <h1>From gridlock to<br><span class="hi">green</span><br>in under 4 hours.</h1>
-        <p class="lede">A snowstorm 1,200 miles away triggers a cascading crisis in Orlando — three EWM KPIs hit red simultaneously. Maria Chen, Warehouse Supervisor, watches as the SAP Joule agent detects root cause, proposes five targeted actions, and restores full operational flow before the end of her shift.</p>
+        <p class="lede">Forty-eight hours ago, the SAP Joule weather agent flagged an incoming nor'easter and triggered an emergency stock transfer from DC-North. This morning, 34 trailers arrive in Orlando — and three EWM KPIs hit red simultaneously. Maria Chen, Warehouse Supervisor, watches as the agent detects root cause, proposes five targeted actions, and restores full operational flow before the end of her shift.</p>
         <div class="pill-group">
           <div class="pill blue">S/4HANA · EWM Core</div>
           <div class="pill purple">SAP BTP · Event Trigger</div>
@@ -730,7 +730,7 @@
               <div class="ba-value red">92% 🔴</div>
             </div>
             <div class="ba-row">
-              <div class="ba-metric">Replenishment WTs/hr</div>
+              <div class="ba-metric">Replenishment Throughput (HU/hr)</div>
               <div class="ba-value red">0 🔴</div>
             </div>
             <div class="ba-row">
@@ -754,10 +754,10 @@
             <div class="ba-label">After (12:30 PM)</div>
             <div class="ba-row">
               <div class="ba-metric">Putaway Utilization</div>
-              <div class="ba-value green">65% 🟢</div>
+              <div class="ba-value green">71% 🟢</div>
             </div>
             <div class="ba-row">
-              <div class="ba-metric">Replenishment WTs/hr</div>
+              <div class="ba-metric">Replenishment Throughput (HU/hr)</div>
               <div class="ba-value green">8 🟢</div>
             </div>
             <div class="ba-row">
@@ -786,7 +786,7 @@
       <div class="section-content">
         <div class="eyebrow">Act 1 · The trigger</div>
         <h2>A storm in New York. A crisis in Orlando.</h2>
-        <p class="lede">SAP BTP weather API detects a severe winter storm warning for DC-North (JFK corridor) → S/4HANA cross-references 847 open outbound deliveries and regional SLAs → system recommends emergency stock transfer → trailers begin rolling south within 6 hours.</p>
+        <p class="lede">Two days ago, the SAP Joule weather agent on BTP detected a severe winter storm system tracking toward the Northeast. Within minutes, it cross-referenced DC-North's 847 open outbound deliveries against regional SLAs and recommended an emergency stock transfer. Trailers began loading that evening. Thirty-six hours later, the first wave arrives at DC-South — just as the storm makes landfall.</p>
         <div class="event-chain">
           <div class="event-box">Weather Alert</div>
           <div class="event-arrow">→</div>
@@ -799,8 +799,8 @@
           <div class="event-box">DC-South</div>
         </div>
         <div class="message-card">
-          <div class="message-label">Weather API · 06:14 AM</div>
-          <div class="message-text">Severe winter storm forecast for DC-North (JFK corridor). Confidence: 94%. Estimated operational impact: 3–5 days. Cross-referencing 847 open outbound deliveries with SLA dates between 2026-04-15 and 2026-04-20. Recommending emergency stock transfer to DC-South staging.</div>
+          <div class="message-label">Joule Weather Agent · 06:14 AM (Storm Landfall Day)</div>
+          <div class="message-text">ESCALATION — Nor'easter making landfall at DC-North (JFK corridor) within 2 hours. Confidence: 94%. DC-North operations suspended. Emergency STO-2026-00847 in transit — 34 trailers dispatched 36h ago, first 12 arriving at DC-South receiving docks now. Monitoring inbound surge impact on ZSTP-01 capacity.</div>
         </div>
       </div>
     </section>
@@ -813,11 +813,11 @@
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-title">🔴 Putaway Utilization 92%</div>
-            <div class="kpi-description">Full Pallet storage type ZSTP-01 approaching maximum capacity. Emergency inbound surge from DC-North: 34 trailers in transit, 12 already docked. No available bin locations. Putaway labor unable to palletize.</div>
+            <div class="kpi-description">Full Pallet storage type ZSTP-01 approaching maximum capacity. Emergency inbound surge from DC-North: 34 trailers dispatched, 12 already docked. Approaching bin capacity limit — putaway tasks queuing at receiving dock.</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">🔴 Replenishment WTs: 0/hr</div>
-            <div class="kpi-description">Case/Each storage type ZSTP-02 has 34% available capacity but zero warehouse tasks generating. All labor allocated to emergency putaway operations. Pick bins starving. Picker utilization: 0%.</div>
+            <div class="kpi-description">Case/Each storage type ZSTP-02 has available capacity but zero warehouse tasks generating. All 12 workers allocated to emergency putaway — none assigned to replenishment. Pick face fill rate: 34%. Pick throughput: 0 lines/hr. Pickers idle — no stock in pick face.</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">🔴 Outbound Aging: 23 Orders</div>
@@ -837,27 +837,27 @@
           <div class="rec-card good">
             <div class="rec-badge good">🟢 HIGH IMPACT</div>
             <div class="rec-title">A. Create Temporary Overflow Bins</div>
-            <div class="rec-description">Designate trailer yard staging positions Y-01 through Y-08 as temporary storage type ZSTP-TMP. Relieves putaway pressure immediately. Estimated capacity relief: +18%. Enables continuous inbound docking.</div>
+            <div class="rec-description">Designate 16 trailer yard staging positions (Y-01 through Y-16) as temporary storage type ZSTP-TMP. Creates ~400 additional pallet slots. Relieves putaway pressure immediately. Estimated capacity relief: +17%. Enables continuous inbound docking.</div>
           </div>
           <div class="rec-card good">
             <div class="rec-badge good">🟢 HIGH IMPACT</div>
             <div class="rec-title">B. Reprioritize Labor & Generate Replenishment WTs</div>
-            <div class="rec-description">Reallocate 4 of 12 putaway workers to replenishment operations. Generate immediate WTs for top 40 SKUs by outbound demand. Unblocks pick face within 2–3 hours. Picker utilization: 85% projected.</div>
+            <div class="rec-description">Reallocate 4 of 12 putaway workers to replenishment. Generate immediate WTs for top 40 SKUs ranked by outbound delivery urgency. Restores baseline replenishment rate of 4 WTs/hr. Pick face recovery projected within 2–3 hours.</div>
           </div>
           <div class="rec-card amber">
             <div class="rec-badge amber">🟡 MEDIUM IMPACT</div>
             <div class="rec-title">C. Increase Replenishment Quantity</div>
-            <div class="rec-description">Current config: 1 HU per WT. Equipment capacity: 2 HU per trip. Doubling replenishment qty doubles throughput (8 WTs/hr → 16 units/hr) with same labor. Change EWM config: ZSTP-01 → ZSTP-02 replen qty parameter.</div>
+            <div class="rec-description">Current EWM replenishment config: 1 HU per warehouse task. Forklift and aisle width support 2 HU per trip. Doubling the HU-per-WT parameter means each completed task moves 2× the material — 4 WTs/hr × 2 HU = 8 HU/hr, double the baseline without adding labor.</div>
           </div>
           <div class="rec-card amber">
             <div class="rec-badge amber">🟡 MEDIUM IMPACT</div>
             <div class="rec-title">D. Authorize Overtime / Additional Shift</div>
-            <div class="rec-description">Based on 34 inbound trailers and 48-hour surge forecast, recommend 4-hour overtime for current shift plus on-call activation. Estimated additional throughput: +35%. Labor cost impact: $2.4K.</div>
+            <div class="rec-description">Based on 34 inbound trailers and 48-hour surge forecast, recommend 4-hour overtime extension for current shift plus on-call activation. Estimated additional throughput: +35%. Labor cost impact: ~$1.8K (8 associates × 4h OT at 1.5× rate).</div>
           </div>
           <div class="rec-card fallback">
             <div class="rec-badge fallback">🔴 FALLBACK ONLY</div>
             <div class="rec-title">E. Direct Pick from Full Pallet Area</div>
-            <div class="rec-description">Allow pickers into ZSTP-01 for SLA-critical orders only. Suboptimal (pick path efficiency -40%, safety risk +22%). Recommended only if Rec B not actioned within 3 hours.</div>
+            <div class="rec-description">Allow pickers into ZSTP-01 for SLA-critical orders only. Suboptimal — pick path efficiency drops ~40% and elevated safety risk in narrow-aisle reach truck zones. Recommended only if Rec B fails to restore pick face within 3 hours.</div>
           </div>
         </div>
       </div>
@@ -875,7 +875,7 @@
             <div class="response-content">
               <div class="response-label">Recommendation A</div>
               <div class="response-text"><strong>Approved</strong> — Maria Chen, 08:42 AM</div>
-              <div class="response-note">Trailer yard staging positions Y-01 through Y-08 configured as ZSTP-TMP immediately.</div>
+              <div class="response-note">Trailer yard staging positions Y-01 through Y-16 configured as ZSTP-TMP immediately.</div>
             </div>
           </div>
           <div class="response-item">
@@ -926,9 +926,9 @@
             <div class="resolution-note">ZSTP-TMP absorbing surge</div>
           </div>
           <div class="resolution-card">
-            <div class="resolution-label">Replenishment WTs/hr</div>
-            <div class="resolution-value">0 → 8</div>
-            <div class="resolution-note">2× baseline throughput</div>
+            <div class="resolution-label">Replenishment Throughput (HU/hr)</div>
+            <div class="resolution-value">0 → 8 HU/hr</div>
+            <div class="resolution-note">4 WTs/hr × 2 HU = 2× baseline</div>
           </div>
           <div class="resolution-card">
             <div class="resolution-label">Outbound Aging</div>
@@ -941,7 +941,7 @@
             <div class="resolution-note">End of shift projection</div>
           </div>
         </div>
-        <p class="lede" style="margin-top: 2rem;">By 12:30 PM, DC-South has processed 28 of 34 inbound trailers, replenishment is running at 2× baseline throughput, and outbound shipping has cleared the aging queue. The storm that hit New York at 6 AM has not cost a single customer order.</p>
+        <p class="lede" style="margin-top: 2rem;">By 12:30 PM, DC-South has processed 28 of 34 inbound trailers, replenishment is moving 8 HU/hr (2× baseline), and outbound shipping has cleared the aging queue. The storm that shut down DC-North has not cost a single customer order.</p>
       </div>
     </section>
 
@@ -986,7 +986,7 @@
   </main>
 
   <footer>
-    <p>Warehouse Operations Agent · SAP Demo Suite · SAP Sapphire 2025</p>
+    <p>Warehouse Operations Agent · SAP Demo Suite · 2026</p>
   </footer>
 
   <script>

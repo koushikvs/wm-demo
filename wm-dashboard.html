@@ -255,9 +255,9 @@
       <div class="ctx">Storage type ZSTP-01</div>
     </div>
     <div class="card kpi critical">
-      <h3>Replenishment WTs/hr</h3>
+      <h3>Replenishment HU/hr</h3>
       <div class="val" id="kpi-replen">0</div>
-      <div class="delta critical" id="kpi-replen-delta">↓ from 4/hr (baseline)</div>
+      <div class="delta critical" id="kpi-replen-delta">↓ from 4 HU/hr (baseline)</div>
       <div class="ctx">ZSTP-01 → ZSTP-02</div>
     </div>
     <div class="card kpi at-risk">
@@ -282,7 +282,7 @@
 
   <!-- REPLENISHMENT THROUGHPUT CHART -->
   <div class="card replen-chart">
-    <h3>Replenishment WTs Generated · Per Hour</h3>
+    <h3>Replenishment Throughput · HU per Hour</h3>
     <div class="chart-wrap"><canvas id="chartReplen"></canvas></div>
   </div>
 
@@ -301,42 +301,42 @@
       </thead>
       <tbody>
         <tr>
-          <td>OBD-2024-8821</td>
+          <td>OBD-2026-8821</td>
           <td>Grainger Industrial</td>
           <td>06:00 AM</td>
           <td>PICK PENDING</td>
           <td><span class="delay-text critical">+2h 34m</span></td>
         </tr>
         <tr>
-          <td>OBD-2024-8834</td>
+          <td>OBD-2026-8834</td>
           <td>Amazon Fulfillment</td>
           <td>06:30 AM</td>
           <td>PICK PENDING</td>
           <td><span class="delay-text critical">+2h 04m</span></td>
         </tr>
         <tr>
-          <td>OBD-2024-8847</td>
+          <td>OBD-2026-8847</td>
           <td>HD Supply</td>
           <td>07:00 AM</td>
           <td>PICK PENDING</td>
           <td><span class="delay-text at-risk">+1h 34m</span></td>
         </tr>
         <tr>
-          <td>OBD-2024-8851</td>
+          <td>OBD-2026-8851</td>
           <td>Fastenal</td>
           <td>07:30 AM</td>
           <td>PICK PENDING</td>
           <td><span class="delay-text at-risk">+1h 04m</span></td>
         </tr>
         <tr>
-          <td>OBD-2024-8863</td>
+          <td>OBD-2026-8863</td>
           <td>MSC Industrial</td>
           <td>08:00 AM</td>
           <td>PICK PENDING</td>
           <td><span class="delay-text at-risk">+34m</span></td>
         </tr>
         <tr>
-          <td>OBD-2024-8871</td>
+          <td>OBD-2026-8871</td>
           <td>Anixter</td>
           <td>08:30 AM</td>
           <td>PICK PENDING</td>
@@ -421,7 +421,7 @@
           <div class="storage-fill gray" id="storage-zstp-tmp" style="width: 0%;">0%</div>
           <div class="storage-proposed" id="proposed-tmp" style="display: none;"></div>
         </div>
-        <div class="storage-stats" id="stats-zstp-tmp">Not yet activated</div>
+        <div class="storage-stats" id="stats-zstp-tmp">Not yet activated / 400 (proposed)</div>
       </div>
     </div>
   </div>
@@ -450,8 +450,8 @@
       document.getElementById('kpi-putaway-delta').textContent = '↓ from 92% · recovery mode';
       document.getElementById('kpi-putaway-delta').className = 'delta';
 
-      animateValue('kpi-replen', 0, 8, duration, '/hr');
-      document.getElementById('kpi-replen-delta').textContent = '↑ from 0/hr · doubled throughput';
+      animateValue('kpi-replen', 0, 8, duration, ' HU/hr');
+      document.getElementById('kpi-replen-delta').textContent = '↑ from 0 HU/hr · 2× baseline throughput';
       document.getElementById('kpi-replen-delta').className = 'delta';
 
       animateValue('kpi-aging', 23, 4, duration, '');
@@ -498,7 +498,7 @@
 
       // Activate temp staging with proposed line
       updateStorageBar('storage-zstp-tmp', 0, 45, duration, 'gray');
-      updateStorageStats('stats-zstp-tmp', '450 / 1,000 (proposed)');
+      updateStorageStats('stats-zstp-tmp', '180 / 400 (active)');
       document.getElementById('proposed-tmp').style.display = 'block';
 
       // Update charts
@@ -509,8 +509,8 @@
       document.getElementById('kpi-putaway-delta').textContent = '↑ from 61% (2h ago)';
       document.getElementById('kpi-putaway-delta').className = 'delta critical';
 
-      animateValue('kpi-replen', 8, 0, duration, '/hr');
-      document.getElementById('kpi-replen-delta').textContent = '↓ from 4/hr (baseline)';
+      animateValue('kpi-replen', 8, 0, duration, ' HU/hr');
+      document.getElementById('kpi-replen-delta').textContent = '↓ from 4 HU/hr (baseline)';
       document.getElementById('kpi-replen-delta').className = 'delta critical';
 
       animateValue('kpi-aging', 4, 23, duration, '');
@@ -557,7 +557,7 @@
 
       // Deactivate temp staging
       updateStorageBar('storage-zstp-tmp', 45, 0, duration, 'gray');
-      updateStorageStats('stats-zstp-tmp', 'Not yet activated');
+      updateStorageStats('stats-zstp-tmp', 'Not yet activated / 400 (proposed)');
       document.getElementById('proposed-tmp').style.display = 'none';
 
       // Update charts
@@ -577,7 +577,7 @@
       const easeOut = 1 - Math.pow(1 - progress, 3);
       const current = start + (end - start) * easeOut;
 
-      if (suffix === '%' || suffix === '/hr') {
+      if (suffix === '%' || suffix === '/hr' || suffix === ' HU/hr') {
         element.textContent = Math.round(current) + suffix;
       } else {
         element.textContent = Math.round(current);
@@ -731,7 +731,7 @@
     data: {
       labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00'],
       datasets: [{
-        label: 'WTs/hour',
+        label: 'HU/hour',
         data: [4, 4, 5, 4, 4, 4, 3, 2, 0],
         backgroundColor: ['#0a7a3b', '#0a7a3b', '#0a7a3b', '#0a7a3b', '#0a7a3b', '#0a7a3b', '#c2410c', '#c2410c', '#b91c1c'],
         borderRadius: 4,
@@ -745,7 +745,7 @@
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: c => `${c.raw} WTs/hour`,
+            label: c => `${c.raw} HU/hour`,
           },
           backgroundColor: 'rgba(0,0,0,0.8)',
           padding: 12,
@@ -764,7 +764,7 @@
           grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
           ticks: { color: '#6e6e73', font: { size: 11 } },
           min: 0,
-          max: 9,
+          max: 10,
         },
       },
     },
@@ -779,7 +779,7 @@
         const y = yScale.getPixelForValue(4);
         ctx.strokeStyle = 'rgba(10,122,59,0.3)';
         ctx.setLineDash([4, 4]);
-        ctx.lineWidth: 1;
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(xScale.left, y);
         ctx.lineTo(xScale.right, y);
@@ -787,7 +787,7 @@
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(10,122,59,0.5)';
         ctx.font = '10px SF Pro Text';
-        ctx.fillText('Baseline: 4 WTs/hr', xScale.left + 8, y - 8);
+        ctx.fillText('Baseline: 4 HU/hr', xScale.left + 8, y - 8);
       }
     }],
   });

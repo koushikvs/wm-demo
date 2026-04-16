@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Story · Warehouse Operations Agent</title>
+  <style>
+    :root {
+      --accent: #0A6ED1;
+      --joule: #7c3aed;
+      --good: #0a7a3b;
+      --warn: #c2410c;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --bg: #ffffff;
+      --border: rgba(0,0,0,0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'SF Pro Text', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 2rem;
+      margin-left: auto;
+    }
+
+    .header-nav a {
+      font-size: 0.875rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: var(--transition);
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid transparent;
+    }
+
+    .header-nav a:hover {
+      color: var(--text);
+    }
+
+    .header-nav a.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Sections */
+    section {
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-content {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .eyebrow {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+    }
+
+    h1, h2 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.3s forwards;
+    }
+
+    h2 {
+      font-size: 2.75rem;
+    }
+
+    h1 .hi {
+      color: var(--accent);
+    }
+
+    .lede {
+      font-size: 1.25rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      max-width: 700px;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.4s forwards;
+    }
+
+    .pill-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.5s forwards;
+    }
+
+    .pill {
+      padding: 0.75rem 1.25rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1.5px solid;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+
+    .pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .pill.blue {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .pill.purple {
+      border-color: var(--joule);
+      color: var(--joule);
+    }
+
+    .pill.green {
+      border-color: var(--good);
+      color: var(--good);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    section.revealed .eyebrow,
+    section.revealed h1,
+    section.revealed h2,
+    section.revealed .lede,
+    section.revealed .pill-group {
+      opacity: 1;
+    }
+
+    /* Before/After */
+    .ba-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 3rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .ba-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      background: var(--bg);
+      transition: var(--transition);
+    }
+
+    .ba-card:hover {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+
+    .ba-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .ba-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ba-row:last-child {
+      border-bottom: none;
+    }
+
+    .ba-metric {
+      font-weight: 500;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .ba-value {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .ba-value.red {
+      color: #b91c1c;
+    }
+
+    .ba-value.green {
+      color: var(--good);
+    }
+
+    .ba-value.amber {
+      color: var(--warn);
+    }
+
+    /* Event Chain */
+    .event-chain {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 3rem 0;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .event-box {
+      flex: 1;
+      min-width: 140px;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(10, 110, 209, 0.04);
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .event-arrow {
+      font-size: 1.5rem;
+      color: var(--muted);
+      margin: 0 0.5rem;
+    }
+
+    /* Alert Message */
+    .message-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: rgba(10, 110, 209, 0.04);
+      margin: 2rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.7s forwards;
+    }
+
+    .message-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .message-text {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* KPI Alert Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .kpi-card {
+      border: 1px solid;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: rgba(185, 28, 28, 0.06);
+      border-color: rgba(185, 28, 28, 0.25);
+      color: #b91c1c;
+    }
+
+    .kpi-card.good {
+      background: rgba(10, 122, 59, 0.06);
+      border-color: rgba(10, 122, 59, 0.25);
+      color: var(--good);
+    }
+
+    .kpi-card.amber {
+      background: rgba(194, 65, 12, 0.06);
+      border-color: rgba(194, 65, 12, 0.25);
+      color: var(--warn);
+    }
+
+    .kpi-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.125rem;
+    }
+
+    .kpi-description {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    /* Flow Diagram */
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.7s forwards;
+    }
+
+    .flow-box {
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(185, 28, 28, 0.25);
+      background: rgba(185, 28, 28, 0.06);
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .flow-box.good {
+      border-color: rgba(10, 122, 59, 0.25);
+      background: rgba(10, 122, 59, 0.06);
+    }
+
+    .flow-box.empty {
+      border-color: rgba(185, 28, 28, 0.25);
+      background: rgba(185, 28, 28, 0.06);
+      opacity: 0.6;
+    }
+
+    .flow-arrow {
+      font-size: 1.5rem;
+      color: #b91c1c;
+      margin: 0 0.25rem;
+    }
+
+    /* Recommendation Cards */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .rec-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      background: var(--bg);
+      transition: var(--transition);
+      border-left: 4px solid;
+    }
+
+    .rec-card.good {
+      border-left-color: var(--good);
+    }
+
+    .rec-card.amber {
+      border-left-color: var(--warn);
+    }
+
+    .rec-card.fallback {
+      border-left-color: #b91c1c;
+    }
+
+    .rec-card:hover {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .rec-badge {
+      display: inline-block;
+      padding: 0.375rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .rec-badge.good {
+      background: rgba(10, 122, 59, 0.15);
+      color: var(--good);
+    }
+
+    .rec-badge.amber {
+      background: rgba(194, 65, 12, 0.15);
+      color: var(--warn);
+    }
+
+    .rec-badge.fallback {
+      background: rgba(185, 28, 28, 0.15);
+      color: #b91c1c;
+    }
+
+    .rec-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .rec-description {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Response Card */
+    .response-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .response-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .response-icon {
+      font-size: 1.5rem;
+      min-width: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .response-content {
+      flex: 1;
+    }
+
+    .response-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .response-text {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .response-note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* Resolution Grid */
+    .resolution-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .resolution-card {
+      border: 1px solid rgba(10, 122, 59, 0.25);
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: rgba(10, 122, 59, 0.06);
+      text-align: center;
+      color: var(--good);
+    }
+
+    .resolution-label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--good);
+      opacity: 0.8;
+      margin-bottom: 0.5rem;
+    }
+
+    .resolution-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .resolution-note {
+      font-size: 0.8rem;
+      color: var(--good);
+      opacity: 0.8;
+    }
+
+    /* Tech Stack Table */
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .tech-table th {
+      text-align: left;
+      padding: 1rem;
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .tech-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .tech-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tech-layer {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.02);
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1, h2 {
+        font-size: 2rem;
+      }
+
+      .lede {
+        font-size: 1.125rem;
+      }
+
+      section {
+        min-height: auto;
+        padding: 3rem 1.5rem;
+      }
+
+      .ba-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .event-chain {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .event-arrow {
+        transform: rotate(90deg);
+      }
+
+      .flow-diagram {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .flow-arrow {
+        transform: rotate(90deg);
+        margin: 0.5rem 0;
+      }
+
+      .resolution-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tech-table {
+        font-size: 0.875rem;
+      }
+
+      .tech-table td,
+      .tech-table th {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <span class="logo-dot"></span>
+        <span>Warehouse Operations Agent</span>
+      </a>
+      <nav class="header-nav">
+        <a href="/wm-story.html" class="active">Story</a>
+        <a href="/wm-agent-console.html">Console</a>
+        <a href="/wm-dashboard.html">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Section 1: Hero -->
+    <section class="revealed">
+      <div class="section-content">
+        <div class="eyebrow">Chapter 1 · A day in the reimagined warehouse</div>
+        <h1>From gridlock to<br><span class="hi">green</span><br>in under 4 hours.</h1>
+        <p class="lede">A snowstorm 1,200 miles away triggers a cascading crisis in Orlando — three EWM KPIs hit red simultaneously. Maria Chen, Warehouse Supervisor, watches as the SAP Joule agent detects root cause, proposes five targeted actions, and restores full operational flow before the end of her shift.</p>
+        <div class="pill-group">
+          <div class="pill blue">S/4HANA · EWM Core</div>
+          <div class="pill purple">SAP BTP · Event Trigger</div>
+          <div class="pill green">SAP Joule · Agentic</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Before/After -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">The shift</div>
+        <h2>Three systems. Three failures. One agent.</h2>
+        <div class="ba-grid">
+          <div class="ba-card">
+            <div class="ba-label">Before (08:15 AM)</div>
+            <div class="ba-row">
+              <div class="ba-metric">Putaway Utilization</div>
+              <div class="ba-value red">92% 🔴</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Replenishment WTs/hr</div>
+              <div class="ba-value red">0 🔴</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Aging Outbound Orders</div>
+              <div class="ba-value red">23 🔴</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Pick Face Availability</div>
+              <div class="ba-value red">34% 🔴</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Time to Root Cause</div>
+              <div class="ba-value red">~2 hours</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Time to Restore Flow</div>
+              <div class="ba-value red">End of day</div>
+            </div>
+          </div>
+          <div class="ba-card">
+            <div class="ba-label">After (12:30 PM)</div>
+            <div class="ba-row">
+              <div class="ba-metric">Putaway Utilization</div>
+              <div class="ba-value green">65% 🟢</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Replenishment WTs/hr</div>
+              <div class="ba-value green">8 🟢</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Aging Outbound Orders</div>
+              <div class="ba-value amber">4 🟡</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Pick Face Availability</div>
+              <div class="ba-value green">82% 🟢</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Time to Root Cause</div>
+              <div class="ba-value green">&lt;90 seconds</div>
+            </div>
+            <div class="ba-row">
+              <div class="ba-metric">Time to Restore Flow</div>
+              <div class="ba-value green">~4 hours</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: The Trigger -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">Act 1 · The trigger</div>
+        <h2>A storm in New York. A crisis in Orlando.</h2>
+        <p class="lede">SAP BTP weather API detects a severe winter storm warning for DC-North (JFK corridor) → S/4HANA cross-references 847 open outbound deliveries and regional SLAs → system recommends emergency stock transfer → trailers begin rolling south within 6 hours.</p>
+        <div class="event-chain">
+          <div class="event-box">Weather Alert</div>
+          <div class="event-arrow">→</div>
+          <div class="event-box">BTP Event</div>
+          <div class="event-arrow">→</div>
+          <div class="event-box">S/4HANA</div>
+          <div class="event-arrow">→</div>
+          <div class="event-box">EWM</div>
+          <div class="event-arrow">→</div>
+          <div class="event-box">DC-South</div>
+        </div>
+        <div class="message-card">
+          <div class="message-label">Weather API · 06:14 AM</div>
+          <div class="message-text">Severe winter storm forecast for DC-North (JFK corridor). Confidence: 94%. Estimated operational impact: 3–5 days. Cross-referencing 847 open outbound deliveries with SLA dates between 2026-04-15 and 2026-04-20. Recommending emergency stock transfer to DC-South staging.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: The Cascading Problem -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">Act 2 · The cascade</div>
+        <h2>Too much in. Nothing through. Orders waiting.</h2>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-title">🔴 Putaway Utilization 92%</div>
+            <div class="kpi-description">Full Pallet storage type ZSTP-01 approaching maximum capacity. Emergency inbound surge from DC-North: 34 trailers in transit, 12 already docked. No available bin locations. Putaway labor unable to palletize.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">🔴 Replenishment WTs: 0/hr</div>
+            <div class="kpi-description">Case/Each storage type ZSTP-02 has 34% available capacity but zero warehouse tasks generating. All labor allocated to emergency putaway operations. Pick bins starving. Picker utilization: 0%.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">🔴 Outbound Aging: 23 Orders</div>
+            <div class="kpi-description">23 outbound deliveries past pick SLA (SLA window: 4 hours). Customer promise dates at risk. Pick bins empty. On-time delivery: 61%. Critical customer accounts affected.</div>
+          </div>
+        </div>
+        <p class="lede" style="margin-top: 2rem;">The gridlock: Full Pallet Area [92% 🔴] blocks all putaway → replenishment stalls → pick face starves → aging orders accumulate.</p>
+      </div>
+    </section>
+
+    <!-- Section 5: The Agent Thinks -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">Act 3 · The agent</div>
+        <h2>Root cause identified. Five recommendations, ranked by impact.</h2>
+        <div class="rec-grid">
+          <div class="rec-card good">
+            <div class="rec-badge good">🟢 HIGH IMPACT</div>
+            <div class="rec-title">A. Create Temporary Overflow Bins</div>
+            <div class="rec-description">Designate trailer yard staging positions Y-01 through Y-08 as temporary storage type ZSTP-TMP. Relieves putaway pressure immediately. Estimated capacity relief: +18%. Enables continuous inbound docking.</div>
+          </div>
+          <div class="rec-card good">
+            <div class="rec-badge good">🟢 HIGH IMPACT</div>
+            <div class="rec-title">B. Reprioritize Labor & Generate Replenishment WTs</div>
+            <div class="rec-description">Reallocate 4 of 12 putaway workers to replenishment operations. Generate immediate WTs for top 40 SKUs by outbound demand. Unblocks pick face within 2–3 hours. Picker utilization: 85% projected.</div>
+          </div>
+          <div class="rec-card amber">
+            <div class="rec-badge amber">🟡 MEDIUM IMPACT</div>
+            <div class="rec-title">C. Increase Replenishment Quantity</div>
+            <div class="rec-description">Current config: 1 HU per WT. Equipment capacity: 2 HU per trip. Doubling replenishment qty doubles throughput (8 WTs/hr → 16 units/hr) with same labor. Change EWM config: ZSTP-01 → ZSTP-02 replen qty parameter.</div>
+          </div>
+          <div class="rec-card amber">
+            <div class="rec-badge amber">🟡 MEDIUM IMPACT</div>
+            <div class="rec-title">D. Authorize Overtime / Additional Shift</div>
+            <div class="rec-description">Based on 34 inbound trailers and 48-hour surge forecast, recommend 4-hour overtime for current shift plus on-call activation. Estimated additional throughput: +35%. Labor cost impact: $2.4K.</div>
+          </div>
+          <div class="rec-card fallback">
+            <div class="rec-badge fallback">🔴 FALLBACK ONLY</div>
+            <div class="rec-title">E. Direct Pick from Full Pallet Area</div>
+            <div class="rec-description">Allow pickers into ZSTP-01 for SLA-critical orders only. Suboptimal (pick path efficiency -40%, safety risk +22%). Recommended only if Rec B not actioned within 3 hours.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: The Supervisor Reacts -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">Act 4 · The supervisor</div>
+        <h2>Maria reviews. Maria decides.</h2>
+        <p class="lede">Supervisor Maria Chen analyzes the five recommendations in the SAP Joule console. Her decisions are logged, fedback into EWM as configuration changes and warehouse task generation, and timestamped for audit. Total decision time: 2 minutes 14 seconds.</p>
+        <div class="response-grid">
+          <div class="response-item">
+            <div class="response-icon">✅</div>
+            <div class="response-content">
+              <div class="response-label">Recommendation A</div>
+              <div class="response-text"><strong>Approved</strong> — Maria Chen, 08:42 AM</div>
+              <div class="response-note">Trailer yard staging positions Y-01 through Y-08 configured as ZSTP-TMP immediately.</div>
+            </div>
+          </div>
+          <div class="response-item">
+            <div class="response-icon">✅</div>
+            <div class="response-content">
+              <div class="response-label">Recommendation B</div>
+              <div class="response-text"><strong>Approved</strong> — Maria Chen, 08:43 AM</div>
+              <div class="response-note">4 putaway workers reassigned to replenishment. WT generation for top 40 SKUs triggered immediately.</div>
+            </div>
+          </div>
+          <div class="response-item">
+            <div class="response-icon">✅</div>
+            <div class="response-content">
+              <div class="response-label">Recommendation C</div>
+              <div class="response-text"><strong>Approved</strong> — Maria Chen, 08:43 AM</div>
+              <div class="response-note">Replenishment quantity doubled from 1 HU to 2 HU per WT in EWM configuration.</div>
+            </div>
+          </div>
+          <div class="response-item">
+            <div class="response-icon">⚡</div>
+            <div class="response-content">
+              <div class="response-label">Recommendation D</div>
+              <div class="response-text"><strong>Modified</strong> — Maria Chen, 08:44 AM</div>
+              <div class="response-note">"Approved overtime, declined second shift. Revisit at noon." 8 associates authorized for 4-hour overtime.</div>
+            </div>
+          </div>
+          <div class="response-item">
+            <div class="response-icon">❌</div>
+            <div class="response-content">
+              <div class="response-label">Recommendation E</div>
+              <div class="response-text"><strong>Rejected</strong> — Maria Chen, 08:44 AM</div>
+              <div class="response-note">"Not unless B fails to clear the pick face." Direct pick from ZSTP-01 remains fallback only.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Resolution -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">Act 5 · Resolution</div>
+        <h2>Restored. Shipping. Green.</h2>
+        <div class="resolution-grid">
+          <div class="resolution-card">
+            <div class="resolution-label">Putaway Utilization</div>
+            <div class="resolution-value">92% → 71%</div>
+            <div class="resolution-note">ZSTP-TMP absorbing surge</div>
+          </div>
+          <div class="resolution-card">
+            <div class="resolution-label">Replenishment WTs/hr</div>
+            <div class="resolution-value">0 → 8</div>
+            <div class="resolution-note">2× baseline throughput</div>
+          </div>
+          <div class="resolution-card">
+            <div class="resolution-label">Outbound Aging</div>
+            <div class="resolution-value">23 → 4</div>
+            <div class="resolution-note">Pick face recovering</div>
+          </div>
+          <div class="resolution-card">
+            <div class="resolution-label">SLA Compliance</div>
+            <div class="resolution-value">61% → 94%</div>
+            <div class="resolution-note">End of shift projection</div>
+          </div>
+        </div>
+        <p class="lede" style="margin-top: 2rem;">By 12:30 PM, DC-South has processed 28 of 34 inbound trailers, replenishment is running at 2× baseline throughput, and outbound shipping has cleared the aging queue. The storm that hit New York at 6 AM has not cost a single customer order.</p>
+      </div>
+    </section>
+
+    <!-- Section 8: Tech Stack -->
+    <section>
+      <div class="section-content">
+        <div class="eyebrow">The platform</div>
+        <h2>Built entirely on the SAP stack.</h2>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Component</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="tech-layer">ERP Core</td>
+              <td>SAP S/4HANA</td>
+              <td>Master data, outbound deliveries, emergency stock transfers, SLA management</td>
+            </tr>
+            <tr>
+              <td class="tech-layer">Warehouse Execution</td>
+              <td>SAP Extended Warehouse Management (EWM)</td>
+              <td>Storage bins, warehouse tasks, putaway/replenishment/picking operations, capacity utilization</td>
+            </tr>
+            <tr>
+              <td class="tech-layer">Intelligence Platform</td>
+              <td>SAP Business Technology Platform (BTP)</td>
+              <td>Weather API integration, event triggers, real-time analytics, agent orchestration</td>
+            </tr>
+            <tr>
+              <td class="tech-layer">AI Agent</td>
+              <td>SAP Joule Studio</td>
+              <td>Root cause analysis, recommendation ranking, supervisor UX, decision logging and audit trail</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Warehouse Operations Agent · SAP Demo Suite · SAP Sapphire 2025</p>
+  </footer>
+
+  <script>
+    // Reveal animations on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('section').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Operations Agent Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --accent: #0A6ED1;
+            --joule: #7c3aed;
+            --good: #0a7a3b;
+            --warn: #c2410c;
+            --red: #b91c1c;
+            --text: #1d1d1f;
+            --muted: #6e6e73;
+            --bg: #ffffff;
+            --border: rgba(0,0,0,0.1);
+            --light-bg: #f7f7f7;
+            --btp-blue: #0078d4;
+            --exec-green: #107c10;
+            --supervisor: #1d1d1f;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            height: 60px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .header-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--joule);
+            animation: pulse-subtle 2s ease-in-out infinite;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--joule);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* ========== CONTROL BAR ========== */
+        .control-bar {
+            height: 56px;
+            background: var(--light-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .scenario-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scenario-selector label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .scenario-selector select {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .scenario-selector select:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(10, 110, 209, 0.1);
+        }
+
+        .scenario-selector select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(10, 110, 209, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0856a8;
+            box-shadow: 0 2px 8px rgba(10, 110, 209, 0.2);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--light-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #efefef;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* ========== MAIN CONTAINER ========== */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 116px);
+        }
+
+        /* ========== LEFT PANEL ========== */
+        .left-panel {
+            width: 35%;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        /* KPI Cards */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .kpi-card {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card.alert {
+            background: rgba(185, 28, 28, 0.05);
+            border-color: rgba(185, 28, 28, 0.2);
+        }
+
+        .kpi-card.warning {
+            background: rgba(194, 65, 12, 0.05);
+            border-color: rgba(194, 65, 12, 0.2);
+        }
+
+        .kpi-card.good {
+            background: rgba(10, 122, 59, 0.05);
+            border-color: rgba(10, 122, 59, 0.2);
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-status {
+            font-size: 14px;
+        }
+
+        /* Recommendations */
+        .recommendations-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rec-card {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .rec-card.approved {
+            background: rgba(10, 122, 59, 0.08);
+            border-color: rgba(10, 122, 59, 0.3);
+        }
+
+        .rec-card.rejected {
+            background: rgba(185, 28, 28, 0.08);
+            border-color: rgba(185, 28, 28, 0.3);
+            opacity: 0.6;
+        }
+
+        .rec-card.modified {
+            background: rgba(194, 65, 12, 0.08);
+            border-color: rgba(194, 65, 12, 0.3);
+        }
+
+        .rec-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .rec-letter {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 20px;
+            background: rgba(10, 110, 209, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .rec-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .rec-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.3px;
+        }
+
+        .rec-badge.high {
+            background: rgba(185, 28, 28, 0.15);
+            color: var(--red);
+        }
+
+        .rec-badge.medium {
+            background: rgba(194, 65, 12, 0.15);
+            color: var(--warn);
+        }
+
+        .rec-badge.fallback {
+            background: rgba(110, 110, 115, 0.15);
+            color: var(--muted);
+        }
+
+        .rec-buttons {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .rec-btn {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: var(--bg);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .rec-btn:hover {
+            border-color: var(--accent);
+            background: rgba(10, 110, 209, 0.05);
+        }
+
+        .rec-status {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--good);
+            text-align: center;
+            padding: 4px;
+        }
+
+        .rec-status.rejected {
+            color: var(--red);
+        }
+
+        .rec-status.modified {
+            color: var(--warn);
+        }
+
+        /* ========== RIGHT PANEL ========== */
+        .right-panel {
+            width: 65%;
+            background: var(--bg);
+            padding: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-container {
+            flex: 1;
+            background: #0d0d0f;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e8e8eb;
+        }
+
+        .log-entry {
+            margin-bottom: 12px;
+            animation: logAppear 0.3s ease;
+            display: flex;
+            gap: 12px;
+        }
+
+        @keyframes logAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .log-timestamp {
+            color: #7c8a99;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        .log-agent {
+            color: #58a6ff;
+            font-weight: 600;
+            flex-shrink: 0;
+            min-width: 140px;
+            text-align: right;
+        }
+
+        .log-agent.btp {
+            color: #0078d4;
+        }
+
+        .log-agent.s4hana {
+            color: #0A6ED1;
+        }
+
+        .log-agent.joule {
+            color: #b692f6;
+        }
+
+        .log-agent.supervisor {
+            color: #8b949e;
+        }
+
+        .log-agent.exec {
+            color: #58a6ff;
+        }
+
+        .log-agent.good {
+            color: #3fb950;
+        }
+
+        .log-agent.warn {
+            color: #d29922;
+        }
+
+        .log-message {
+            color: #e8e8eb;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .log-message.alert {
+            color: #f85149;
+        }
+
+        .log-message.success {
+            color: #3fb950;
+        }
+
+        .log-message.warning {
+            color: #d29922;
+        }
+
+        /* Scrollbar styling */
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .left-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .left-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-state {
+            color: var(--muted);
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">Warehouse Operations Agent Console</div>
+            <div class="header-location">
+                <span>DC-South</span>
+                <span>·</span>
+                <span>Orlando, FL</span>
+            </div>
+        </div>
+        <div class="status-pill">
+            <div class="status-dot"></div>
+            JOULE ACTIVE
+        </div>
+    </div>
+
+    <!-- CONTROL BAR -->
+    <div class="control-bar">
+        <div class="scenario-selector">
+            <label for="scenario">Scenario:</label>
+            <select id="scenario">
+                <option value="storm">Storm Surge</option>
+                <option value="labor">Labor Shortage</option>
+                <option value="capacity">Capacity Crunch</option>
+            </select>
+        </div>
+        <div class="button-group">
+            <button class="btn btn-primary" id="run-btn">
+                <span id="run-icon">▶</span>
+                <span id="run-text">Run Simulation</span>
+            </button>
+            <button class="btn btn-secondary" id="reset-btn">↺ Reset</button>
+            <div class="timer" id="timer">00:00</div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div>
+                <div class="panel-section-title">EWM System State</div>
+                <div class="kpi-container">
+                    <div class="kpi-card" id="kpi-putaway">
+                        <div class="kpi-label">Putaway Util</div>
+                        <div class="kpi-value">
+                            <span id="val-putaway">92</span><span class="kpi-status">%</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card" id="kpi-replen">
+                        <div class="kpi-label">Replen WTs</div>
+                        <div class="kpi-value">
+                            <span id="val-replen">0</span><span class="kpi-status">/hr</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card" id="kpi-aging">
+                        <div class="kpi-label">Aging Orders</div>
+                        <div class="kpi-value">
+                            <span id="val-aging">23</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card" id="kpi-pickface">
+                        <div class="kpi-label">Pick Face</div>
+                        <div class="kpi-value">
+                            <span id="val-pickface">34</span><span class="kpi-status">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="recommendations-section" style="display: none;">
+                <div class="panel-section-title">Pending Actions</div>
+                <div class="recommendations-container" id="recommendations-list"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <div class="panel-section-title">Agent Reasoning Log</div>
+            <div class="log-container" id="log-container">
+                <div class="empty-state">Awaiting simulation start...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== STATE ==========
+        const state = {
+            isRunning: false,
+            currentStep: 0,
+            elapsedSeconds: 0,
+            timerInterval: null,
+            recommendations: {
+                A: { title: 'Create overflow bins', impact: 'HIGH', status: null },
+                B: { title: 'Reallocate labor to replen', impact: 'HIGH', status: null },
+                C: { title: 'Increase replen quantity', impact: 'MEDIUM', status: null },
+                D: { title: 'Authorize overtime + labor', impact: 'MEDIUM', status: null },
+                E: { title: 'Direct pick override', impact: 'FALLBACK', status: null }
+            }
+        };
+
+        // ========== SIMULATION STEPS ==========
+        const steps = [
+            {
+                delay: 0,
+                agent: 'WEATHER AGENT',
+                agentClass: 'btp',
+                message: '06:14:03 — Severe winter storm advisory issued for JFK corridor, NY. API source: NOAA Weather Service. Confidence: 94.2%. Forecasted start: T-8h. Cross-referencing S/4HANA open outbound delivery schedule...'
+            },
+            {
+                delay: 600,
+                agent: 'WEATHER AGENT',
+                agentClass: 'btp',
+                message: '06:14:11 — Found 847 open outbound deliveries at DC-North. 312 scheduled for pick within 72h. Recommended action: Emergency stock transfer to DC-South (Orlando). Initiating S/4HANA stock transfer order STO-2024-00847.'
+            },
+            {
+                delay: 1200,
+                agent: 'EWM MONITOR',
+                agentClass: 's4hana',
+                message: '08:17:44 — DC-South inbound alert. Transfer order STO-2024-00847 active. 34 trailers dispatched from DC-North. 12 trailers docked at DC-South receiving. Beginning putaway task generation for storage type ZSTP-01 (Full Pallet).'
+            },
+            {
+                delay: 1800,
+                agent: 'EWM MONITOR',
+                agentClass: 's4hana',
+                message: '08:34:22 — ⚠ ALERT: Storage type ZSTP-01 utilization: 78% and rising. Replenishment task generation for ZSTP-02 (Case/Each): 0 WTs generated in last 60 min. Labor pool: 12 workers allocated to putaway, 0 to replenishment.',
+                messageClass: 'warning'
+            },
+            {
+                delay: 2400,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:29 — Initiating root cause analysis. Querying EWM storage bin master, open WT queue, labor allocation table, outbound delivery aging report...'
+            },
+            {
+                delay: 3000,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:31 — ROOT CAUSE IDENTIFIED: Emergency inbound surge has monopolized putaway labor. Replenishment tasks not generating because: (1) no labor available for replen workflow, (2) system replen quantity set to 1 HU/trip — below equipment capacity of 2 HU. Pick face for ZSTP-02 at 34% — 23 outbound deliveries past SLA pick window.'
+            },
+            {
+                delay: 3600,
+                agent: 'JOULE AGENT',
+                agentClass: 'good',
+                message: '08:34:32 — KPI STATUS: Putaway Utilization ZSTP-01: 92% 🔴 | Replen Throughput: 0 WTs/hr 🔴 | Outbound Aging: 23 orders 🔴 | Pick Face Availability: 34% 🔴',
+                messageClass: 'alert',
+                action: 'updateKPI'
+            },
+            {
+                delay: 4200,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:35 — RECOMMENDATION A [HIGH]: Create temporary overflow bins. Designate trailer yard positions Y-01–Y-08 as storage type ZSTP-TMP. No system downtime required. Immediate capacity relief: +18%. Action: EWM bin extension → Supervisor approval required.'
+            },
+            {
+                delay: 4800,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:37 — RECOMMENDATION B [HIGH]: Reallocate labor to replenishment. Reassign 4 of 12 putaway workers to replen workflow. Generate immediate WTs for top 40 SKUs by outbound demand. Pick face recovery est.: 2–3 hours. Action: WT generation + labor reassignment → Supervisor approval required.'
+            },
+            {
+                delay: 5400,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:39 — RECOMMENDATION C [MEDIUM]: Increase replenishment quantity. Current config: 1 HU/WT. Equipment can handle 2 HU/trip. Config change doubles replen throughput with same labor headcount. Action: EWM replen qty change ZSTP-01→ZSTP-02 → Supervisor approval required.'
+            },
+            {
+                delay: 6000,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:41 — RECOMMENDATION D [MEDIUM]: Authorize overtime + additional labor. Surge forecast: 34 trailers / 48h. Current capacity insufficient for normalized operations. Recommend 4h OT current shift + on-call activation. Action: HR notification → Supervisor approval required.'
+            },
+            {
+                delay: 6600,
+                agent: 'JOULE AGENT',
+                agentClass: 'joule',
+                message: '08:34:43 — RECOMMENDATION E [FALLBACK]: Direct pick from ZSTP-01 for SLA-critical orders. Pick path efficiency penalty: -40%. Activate only if Rec B fails to restore pick face within 3 hours. Action: EWM pick strategy override → Supervisor approval required.'
+            },
+            {
+                delay: 7200,
+                agent: 'JOULE AGENT',
+                agentClass: 'good',
+                message: '08:34:44 — Analysis complete. 5 recommendations ready for supervisor review. Awaiting Maria Chen decision. EWM configuration changes staged and ready to execute upon approval.',
+                action: 'showRecommendations'
+            },
+            {
+                delay: 7800,
+                agent: 'SUPERVISOR',
+                agentClass: 'supervisor',
+                message: '08:42:11 — ✅ Rec A: APPROVED. Create ZSTP-TMP bins Y-01–Y-08.',
+                action: 'approveA'
+            },
+            {
+                delay: 8400,
+                agent: 'EWM EXECUTE',
+                agentClass: 'exec',
+                message: '08:42:12 — Executing: 8 temporary bins created in EWM. Storage type ZSTP-TMP active. Putaway tasks redirecting...',
+                messageClass: 'success'
+            },
+            {
+                delay: 9000,
+                agent: 'SUPERVISOR',
+                agentClass: 'supervisor',
+                message: '08:43:03 — ✅ Rec B: APPROVED. Reallocate labor, generate replen WTs.',
+                action: 'approveB'
+            },
+            {
+                delay: 9600,
+                agent: 'EWM EXECUTE',
+                agentClass: 'exec',
+                message: '08:43:04 — Executing: 48 replenishment WTs generated for top 40 SKUs. Labor reassignment: 4 workers → replen workflow. First WTs appearing in mobile RF devices.',
+                messageClass: 'success'
+            },
+            {
+                delay: 10200,
+                agent: 'SUPERVISOR',
+                agentClass: 'supervisor',
+                message: '08:43:31 — ✅ Rec C: APPROVED. Change replen qty to 2 HU/WT.',
+                action: 'approveC'
+            },
+            {
+                delay: 10800,
+                agent: 'EWM EXECUTE',
+                agentClass: 'exec',
+                message: '08:43:32 — Executing: Replenishment quantity updated. Config: 1 HU/WT → 2 HU/WT for ZSTP-01→ZSTP-02. Effective immediately on next WT generation cycle.',
+                messageClass: 'success'
+            },
+            {
+                delay: 11400,
+                agent: 'SUPERVISOR',
+                agentClass: 'supervisor',
+                message: '08:44:02 — ⚡ Rec D: MODIFIED. Approving overtime only. Second shift declined — revisit at noon. Activating on-call for 4h OT.',
+                action: 'modifyD'
+            },
+            {
+                delay: 12000,
+                agent: 'SUPERVISOR',
+                agentClass: 'supervisor',
+                message: '08:44:19 — ❌ Rec E: REJECTED. Do not pick from full pallet unless Rec B fails by 11:30 AM.',
+                action: 'rejectE'
+            },
+            {
+                delay: 12600,
+                agent: 'JOULE AGENT',
+                agentClass: 'good',
+                message: '08:44:21 — Supervisor decisions logged. Executing approved actions. Monitoring KPI recovery. Next status update in 30 minutes.',
+                messageClass: 'success'
+            },
+            {
+                delay: 13200,
+                agent: 'JOULE AGENT',
+                agentClass: 'good',
+                message: '12:31:07 — ✅ KPI RECOVERY: Putaway Utilization ZSTP-01: 71% 🟡 (–21%) | Replen Throughput: 8 WTs/hr 🟢 (2× baseline) | Outbound Aging: 4 orders 🟡 (–19 orders) | Pick Face Availability: 82% 🟢 (+48%)',
+                messageClass: 'success',
+                action: 'updateKPIRecovery'
+            },
+            {
+                delay: 13800,
+                agent: 'JOULE AGENT',
+                agentClass: 'good',
+                message: '12:31:08 — ✅ OPERATIONAL FLOW RESTORED. 28/34 inbound trailers processed. Outbound shipping resuming. Customer SLA compliance projection: 94%. Storm impact on DC-South: contained. Maria Chen — thumbs up logged. Session complete.',
+                messageClass: 'success'
+            }
+        ];
+
+        // ========== UI ELEMENTS ==========
+        const runBtn = document.getElementById('run-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const logContainer = document.getElementById('log-container');
+        const timerEl = document.getElementById('timer');
+        const scenarioSelect = document.getElementById('scenario');
+        const recommendationsSection = document.getElementById('recommendations-section');
+        const recommendationsList = document.getElementById('recommendations-list');
+
+        // ========== TIMER ==========
+        function updateTimer() {
+            const minutes = Math.floor(state.elapsedSeconds / 60);
+            const seconds = state.elapsedSeconds % 60;
+            timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            state.elapsedSeconds++;
+        }
+
+        function startTimer() {
+            state.elapsedSeconds = 0;
+            updateTimer();
+            state.timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
+        }
+
+        // ========== LOG RENDERING ==========
+        function addLogEntry(timestamp, agent, agentClass, message, messageClass = '') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            const ts = document.createElement('div');
+            ts.className = 'log-timestamp';
+            ts.textContent = timestamp;
+
+            const ag = document.createElement('div');
+            ag.className = `log-agent ${agentClass}`;
+            ag.textContent = `[${agent}]`;
+
+            const msg = document.createElement('div');
+            msg.className = `log-message ${messageClass}`;
+            msg.textContent = message;
+
+            entry.appendChild(ts);
+            entry.appendChild(ag);
+            entry.appendChild(msg);
+            logContainer.appendChild(entry);
+
+            // Auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '<div class="empty-state">Awaiting simulation start...</div>';
+        }
+
+        // ========== RECOMMENDATION CARDS ==========
+        function createRecommendationCard(letter) {
+            const rec = state.recommendations[letter];
+            const card = document.createElement('div');
+            card.className = 'rec-card';
+            card.id = `rec-${letter}`;
+
+            const header = document.createElement('div');
+            header.className = 'rec-header';
+
+            const letterEl = document.createElement('div');
+            letterEl.className = 'rec-letter';
+            letterEl.textContent = letter;
+
+            const title = document.createElement('div');
+            title.className = 'rec-title';
+            title.textContent = rec.title;
+
+            const badge = document.createElement('div');
+            badge.className = `rec-badge ${rec.impact.toLowerCase()}`;
+            badge.textContent = rec.impact;
+
+            header.appendChild(letterEl);
+            header.appendChild(title);
+            header.appendChild(badge);
+
+            const buttons = document.createElement('div');
+            buttons.className = 'rec-buttons';
+            buttons.id = `rec-buttons-${letter}`;
+
+            const approveBtn = document.createElement('button');
+            approveBtn.className = 'rec-btn';
+            approveBtn.textContent = '👍 Approve';
+            approveBtn.onclick = () => approveRecommendation(letter);
+
+            const rejectBtn = document.createElement('button');
+            rejectBtn.className = 'rec-btn';
+            rejectBtn.textContent = '👎 Reject';
+            rejectBtn.onclick = () => rejectRecommendation(letter);
+
+            buttons.appendChild(approveBtn);
+            buttons.appendChild(rejectBtn);
+
+            card.appendChild(header);
+            card.appendChild(buttons);
+
+            return card;
+        }
+
+        function showRecommendations() {
+            recommendationsList.innerHTML = '';
+            for (const letter of ['A', 'B', 'C', 'D', 'E']) {
+                recommendationsList.appendChild(createRecommendationCard(letter));
+            }
+            recommendationsSection.style.display = 'block';
+        }
+
+        function updateRecommendationStatus(letter, status) {
+            const card = document.getElementById(`rec-${letter}`);
+            const buttonsDiv = document.getElementById(`rec-buttons-${letter}`);
+
+            card.classList.remove('approved', 'rejected', 'modified');
+
+            if (status === 'approved') {
+                card.classList.add('approved');
+                buttonsDiv.innerHTML = '<div class="rec-status">✅ Approved</div>';
+            } else if (status === 'rejected') {
+                card.classList.add('rejected');
+                buttonsDiv.innerHTML = '<div class="rec-status rejected">❌ Rejected</div>';
+            } else if (status === 'modified') {
+                card.classList.add('modified');
+                buttonsDiv.innerHTML = '<div class="rec-status modified">⚡ Modified</div>';
+            }
+
+            state.recommendations[letter].status = status;
+        }
+
+        function approveRecommendation(letter) {
+            updateRecommendationStatus(letter, 'approved');
+        }
+
+        function rejectRecommendation(letter) {
+            updateRecommendationStatus(letter, 'rejected');
+        }
+
+        // ========== KPI UPDATES ==========
+        function updateKPI() {
+            document.getElementById('val-putaway').textContent = '92';
+            document.getElementById('val-replen').textContent = '0';
+            document.getElementById('val-aging').textContent = '23';
+            document.getElementById('val-pickface').textContent = '34';
+
+            updateKPIStyles();
+        }
+
+        function updateKPIRecovery() {
+            document.getElementById('val-putaway').textContent = '71';
+            document.getElementById('val-replen').textContent = '8';
+            document.getElementById('val-aging').textContent = '4';
+            document.getElementById('val-pickface').textContent = '82';
+
+            updateKPIStyles();
+        }
+
+        function updateKPIStyles() {
+            const putaway = parseInt(document.getElementById('val-putaway').textContent);
+            const replen = parseInt(document.getElementById('val-replen').textContent);
+            const aging = parseInt(document.getElementById('val-aging').textContent);
+            const pickface = parseInt(document.getElementById('val-pickface').textContent);
+
+            const kpiPutaway = document.getElementById('kpi-putaway');
+            const kpiReplen = document.getElementById('kpi-replen');
+            const kpiAging = document.getElementById('kpi-aging');
+            const kpiPickface = document.getElementById('kpi-pickface');
+
+            kpiPutaway.classList.remove('alert', 'warning', 'good');
+            kpiReplen.classList.remove('alert', 'warning', 'good');
+            kpiAging.classList.remove('alert', 'warning', 'good');
+            kpiPickface.classList.remove('alert', 'warning', 'good');
+
+            kpiPutaway.classList.add(putaway > 80 ? 'alert' : putaway > 60 ? 'warning' : 'good');
+            kpiReplen.classList.add(replen === 0 ? 'alert' : replen < 5 ? 'warning' : 'good');
+            kpiAging.classList.add(aging > 20 ? 'alert' : aging > 10 ? 'warning' : 'good');
+            kpiPickface.classList.add(pickface < 50 ? 'alert' : pickface < 75 ? 'warning' : 'good');
+        }
+
+        // ========== SIMULATION CONTROL ==========
+        function runSimulation() {
+            state.isRunning = true;
+            state.currentStep = 0;
+            runBtn.disabled = true;
+            resetBtn.disabled = true;
+            scenarioSelect.disabled = true;
+            document.getElementById('run-text').textContent = 'Running...';
+            document.getElementById('run-icon').textContent = '⏸';
+
+            clearLog();
+            startTimer();
+
+            executeNextStep();
+        }
+
+        function executeNextStep() {
+            if (state.currentStep >= steps.length) {
+                finishSimulation();
+                return;
+            }
+
+            const step = steps[state.currentStep];
+
+            setTimeout(() => {
+                addLogEntry(
+                    new Date().toLocaleTimeString('en-US', { hour12: false }),
+                    step.agent,
+                    step.agentClass,
+                    step.message,
+                    step.messageClass || ''
+                );
+
+                if (step.action === 'updateKPI') {
+                    updateKPI();
+                } else if (step.action === 'showRecommendations') {
+                    showRecommendations();
+                } else if (step.action === 'approveA') {
+                    updateRecommendationStatus('A', 'approved');
+                } else if (step.action === 'approveB') {
+                    updateRecommendationStatus('B', 'approved');
+                } else if (step.action === 'approveC') {
+                    updateRecommendationStatus('C', 'approved');
+                } else if (step.action === 'modifyD') {
+                    updateRecommendationStatus('D', 'modified');
+                } else if (step.action === 'rejectE') {
+                    updateRecommendationStatus('E', 'rejected');
+                } else if (step.action === 'updateKPIRecovery') {
+                    updateKPIRecovery();
+                }
+
+                state.currentStep++;
+                executeNextStep();
+            }, step.delay - (state.currentStep > 0 ? steps[state.currentStep - 1].delay : 0));
+        }
+
+        function finishSimulation() {
+            state.isRunning = false;
+            stopTimer();
+            runBtn.disabled = false;
+            resetBtn.disabled = false;
+            scenarioSelect.disabled = false;
+            document.getElementById('run-text').textContent = 'Run Simulation';
+            document.getElementById('run-icon').textContent = '▶';
+        }
+
+        function resetSimulation() {
+            state.isRunning = false;
+            state.currentStep = 0;
+            stopTimer();
+            timerEl.textContent = '00:00';
+
+            clearLog();
+            recommendationsSection.style.display = 'none';
+            recommendationsList.innerHTML = '';
+
+            for (const letter of Object.keys(state.recommendations)) {
+                state.recommendations[letter].status = null;
+            }
+
+            updateKPI();
+            updateKPIStyles();
+
+            runBtn.disabled = false;
+            resetBtn.disabled = false;
+            scenarioSelect.disabled = false;
+            document.getElementById('run-text').textContent = 'Run Simulation';
+            document.getElementById('run-icon').textContent = '▶';
+        }
+
+        // ========== EVENT LISTENERS ==========
+        runBtn.addEventListener('click', runSimulation);
+        resetBtn.addEventListener('click', resetSimulation);
+
+        // ========== INITIALIZATION ==========
+        updateKPI();
+        updateKPIStyles();
+    </script>
+</body>
+</html>

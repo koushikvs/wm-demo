@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warehouse Operations Agent · SAP Demo Suite</title>
+  <style>
+    :root {
+      --accent: #0A6ED1;
+      --joule: #7c3aed;
+      --good: #0a7a3b;
+      --warn: #c2410c;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --bg: #ffffff;
+      --border: rgba(0,0,0,0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'SF Pro Text', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 2rem;
+      margin-left: auto;
+    }
+
+    .header-nav a {
+      font-size: 0.875rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .header-nav a:hover {
+      color: var(--text);
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 70% 50%, rgba(10, 110, 209, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      background: rgba(10, 110, 209, 0.1);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 4.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtext {
+      font-size: 1.125rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pill-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 4rem;
+    }
+
+    .pill {
+      padding: 0.75rem 1.25rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1.5px solid;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+
+    .pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .pill.blue {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .pill.purple {
+      border-color: var(--joule);
+      color: var(--joule);
+    }
+
+    .pill.green {
+      border-color: var(--good);
+      color: var(--good);
+    }
+
+    /* Views Section */
+    .section-header {
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 4rem 2rem 2rem 2rem;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cards-grid {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      position: relative;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 2rem;
+      background: var(--bg);
+      transition: var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      min-height: 380px;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .card.blue::before {
+      background: var(--accent);
+    }
+
+    .card.orange::before {
+      background: #f97316;
+    }
+
+    .card.green::before {
+      background: var(--good);
+    }
+
+    .card:hover {
+      border-color: rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      transform: translateY(-4px);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .card-subtitle {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-description {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.7;
+      flex-grow: 1;
+    }
+
+    /* Mockup */
+    .mockup {
+      margin-top: 2rem;
+      height: 160px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.04) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mockup::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Systems Section */
+    .systems-section {
+      max-width: 1200px;
+      margin: 6rem auto;
+      padding: 0 2rem;
+    }
+
+    .systems-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .systems-header {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2rem;
+    }
+
+    .systems-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .system-badge {
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(10, 110, 209, 0.04);
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .system-badge:hover {
+      border-color: var(--accent);
+      background: rgba(10, 110, 209, 0.08);
+    }
+
+    .system-code {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .system-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 8rem;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.02);
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .subtext {
+        font-size: 1rem;
+      }
+
+      .pill-group {
+        gap: 0.75rem;
+      }
+
+      .pill {
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .header-nav {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <span class="logo-dot"></span>
+        <span>Warehouse Operations Agent</span>
+      </a>
+      <nav class="header-nav">
+        <a href="/wm-story.html">Story</a>
+        <a href="/wm-agent-console.html">Console</a>
+        <a href="/wm-dashboard.html">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="badge">⚡ Agentic Enterprise Demo · SAP Warehouse Management</div>
+        <h1>Warehouse Operations<br><span>Agent</span></h1>
+        <p class="subtext">An autonomous AI agent built on SAP Joule Studio that detects warehouse disruptions in real time — analyzing EWM bin utilization, replenishment throughput, and delivery aging — and surfaces prioritized recommendations to the Warehouse Supervisor, complete with root cause, impact estimates, and one-click action assignment.</p>
+        <div class="pill-group">
+          <div class="pill blue">SAP S/4HANA · EWM · Core</div>
+          <div class="pill purple">SAP BTP · Event-Driven · Hybrid</div>
+          <div class="pill green">SAP Joule Studio · Agentic Edge</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Views -->
+    <div class="section-header">Three interactive views</div>
+    <div class="cards-grid">
+      <a href="/wm-story.html" class="card blue">
+        <div class="card-label">Chapter 1 · Narrative</div>
+        <h2 class="card-title">The Story</h2>
+        <div class="card-subtitle">Narrative</div>
+        <p class="card-description">Follow Warehouse Supervisor Maria Chen as a major snowstorm triggers an emergency stock transfer from DC-North (NY) to DC-South (Orlando). Watch three KPIs hit red simultaneously, and see how the SAP Joule agent detects root cause and restores operational flow in under 4 hours.</p>
+        <div class="mockup"></div>
+      </a>
+
+      <a href="/wm-agent-console.html" class="card orange">
+        <div class="card-label">Chapter 2 · Simulation</div>
+        <h2 class="card-title">The Agent Console</h2>
+        <div class="card-subtitle">Simulation</div>
+        <p class="card-description">Watch the SAP Joule agent reason in real time — querying EWM storage bin data, identifying the replenishment bottleneck, and presenting Maria with five prioritized recommendations, each with impact estimates and a thumbs up/down action assignment.</p>
+        <div class="mockup"></div>
+      </a>
+
+      <a href="/wm-dashboard.html" class="card green">
+        <div class="card-label">Chapter 3 · Intelligence</div>
+        <h2 class="card-title">The Ops Dashboard</h2>
+        <div class="card-subtitle">Intelligence</div>
+        <p class="card-description">A live EWM operations intelligence view — putaway utilization, replenishment throughput, outbound delivery aging, and pick face availability across both distribution centers, updating as agent recommendations are applied.</p>
+        <div class="mockup"></div>
+      </a>
+    </div>
+
+    <!-- Systems -->
+    <section class="systems-section">
+      <div class="systems-label">Powered by</div>
+      <h2 class="systems-header">SAP Enterprise Systems</h2>
+      <div class="systems-grid">
+        <div class="system-badge">
+          <div class="system-code">S4H</div>
+          <div class="system-name">SAP S/4HANA</div>
+        </div>
+        <div class="system-badge">
+          <div class="system-code">EWM</div>
+          <div class="system-name">SAP EWM</div>
+        </div>
+        <div class="system-badge">
+          <div class="system-code">BTP</div>
+          <div class="system-name">SAP BTP</div>
+        </div>
+        <div class="system-badge">
+          <div class="system-code">JOU</div>
+          <div class="system-name">SAP Joule</div>
+        </div>
+        <div class="system-badge">
+          <div class="system-code">WEA</div>
+          <div class="system-name">Weather API</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Warehouse Operations Agent · SAP Demo Suite · SAP Sapphire 2025</p>
+  </footer>
+</body>
+</html>

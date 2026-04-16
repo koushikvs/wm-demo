@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EWM Operations Intelligence — SAP Warehouse Management Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #f5f5f7;
+      --border: rgba(0,0,0,0.1);
+      --border-h: rgba(0,0,0,0.18);
+      --accent: #0A6ED1;
+      --joule: #7c3aed;
+      --good: #0a7a3b;
+      --watch: #c2410c;
+      --red: #b91c1c;
+      --text: #1d1d1f;
+      --text-2: #6e6e73;
+      --text-3: #86868b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "SF Pro Text", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+      background: var(--bg); color: var(--text);
+      font-size: 14px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    header {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 22px; height: 44px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+    }
+    .hleft { display: flex; align-items: center; gap: 0.7rem; }
+    .brand { font-size: 0.85rem; font-weight: 600; color: var(--text); text-decoration: none; letter-spacing: -0.01em; }
+    .divider { width: 1px; height: 16px; background: var(--border); }
+    .crumb { font-size: 0.75rem; color: var(--text-2); }
+    .nav { display: flex; gap: 0.08rem; }
+    .nav a {
+      font-size: 0.72rem; color: var(--text-3); text-decoration: none;
+      padding: 0.24rem 0.55rem; border-radius: 980px;
+      transition: all 0.2s;
+    }
+    .nav a:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+    .nav a.active { color: var(--accent); background: rgba(10,110,209,0.1); }
+
+    .header-right { display: flex; gap: 1rem; align-items: center; }
+    .toggle-mode {
+      font-size: 0.75rem; color: var(--text-2); cursor: pointer;
+      padding: 0.3rem 0.7rem; border-radius: 980px; border: 1px solid var(--border);
+      transition: all 0.3s; background: var(--panel-2);
+    }
+    .toggle-mode:hover { background: var(--border); color: var(--text); }
+    .toggle-mode.active { color: var(--joule); background: rgba(124,58,237,0.1); border-color: var(--joule); }
+
+    .alert {
+      background: rgba(185,28,28,0.06);
+      border-bottom: 1px solid rgba(185,28,28,0.15);
+      padding: 0.55rem 1.4rem;
+    }
+    .alert-inner {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.8rem; color: #991b1b;
+      max-width: 1440px; margin: 0 auto;
+    }
+    .alert-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--red); box-shadow: 0 0 8px var(--red);
+      flex-shrink: 0; animation: blink 1.3s infinite;
+    }
+    .alert.recovering { background: rgba(10,122,59,0.06); border-bottom-color: rgba(10,122,59,0.15); }
+    .alert.recovering .alert-inner { color: #166534; }
+    .alert.recovering .alert-dot { background: var(--good); box-shadow: 0 0 8px var(--good); }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+    .hero {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.3rem 1.4rem 1rem;
+      max-width: 1440px; margin: 0 auto; gap: 1.5rem;
+    }
+    .eyebrow {
+      display: block; font-size: 0.67rem; font-weight: 700;
+      letter-spacing: 0.13em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.3rem;
+    }
+    .hero h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.01em; }
+    .hero-sub { font-size: 0.84rem; color: var(--text-2); margin-top: 0.15rem; }
+    .hero-right { display: flex; gap: 0.7rem; align-items: center; font-size: 0.8rem; color: var(--text-2); }
+    .live {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 12px; border-radius: 980px;
+      background: rgba(10,122,59,0.08); border: 1px solid rgba(10,122,59,0.3);
+      color: var(--good); font-weight: 600; font-size: 11px;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); animation: blink 1.5s infinite; }
+
+    .grid {
+      max-width: 1440px; margin: 0 auto; padding: 0.5rem 1.4rem 3rem;
+      display: grid; gap: 0.9rem;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.1rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-h); }
+    .card h3 {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-2);
+      margin-bottom: 0.7rem;
+    }
+
+    /* KPIs */
+    .kpi-row { grid-column: span 12; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; }
+    .kpi .val { font-size: 1.85rem; font-weight: 600; letter-spacing: -0.015em; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    .kpi .delta { font-size: 0.76rem; margin-top: 0.3rem; color: var(--good); }
+    .kpi .delta.neg { color: var(--watch); }
+    .kpi .delta.critical { color: var(--red); }
+    .kpi .ctx { font-size: 0.72rem; color: var(--text-3); margin-top: 0.15rem; }
+    .kpi.critical .val { color: var(--red); }
+    .kpi.at-risk .val { color: var(--watch); }
+
+    /* Layout grouping */
+    .putaway-chart { grid-column: span 6; }
+    .replen-chart { grid-column: span 6; }
+    .aging-table { grid-column: span 6; }
+    .joule-panel { grid-column: span 6; }
+    .storage-chart { grid-column: span 12; }
+
+    .chart-wrap { height: 210px; position: relative; }
+
+    /* Aging Table */
+    table.aging {
+      width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    }
+    table.aging th, table.aging td {
+      padding: 0.6rem 0.7rem; text-align: left; border-top: 1px solid var(--border);
+    }
+    table.aging th {
+      font-size: 0.68rem; color: var(--text-3); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-top: none;
+    }
+    table.aging td:first-child { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .chip {
+      font-size: 0.7rem; font-weight: 600;
+      padding: 0.15rem 0.55rem; border-radius: 980px;
+      border: 1px solid; display: inline-block;
+    }
+    .chip.green  { color: var(--good);  background: rgba(10,122,59,0.08);  border-color: rgba(10,122,59,0.28); }
+    .chip.amber  { color: #a16207;      background: rgba(202,138,4,0.08);  border-color: rgba(202,138,4,0.3); }
+    .chip.red    { color: var(--red);   background: rgba(185,28,28,0.08);  border-color: rgba(185,28,28,0.28); }
+    .chip.yellow { color: #b45309;      background: rgba(217,119,6,0.08);  border-color: rgba(217,119,6,0.28); }
+
+    .delay-text { font-size: 0.76rem; font-family: 'JetBrains Mono', monospace; }
+    .delay-text.critical { color: var(--red); font-weight: 600; }
+    .delay-text.at-risk { color: var(--watch); font-weight: 600; }
+
+    .aging-note { font-size: 0.72rem; color: var(--text-3); margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border); }
+
+    /* Joule Recommendations Panel */
+    .joule-recs { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+    .rec-item {
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem;
+      background: var(--panel-2); display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; align-items: flex-start;
+    }
+    .rec-label { font-size: 0.8rem; font-weight: 500; color: var(--text); line-height: 1.3; }
+    .rec-impact { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); margin-top: 0.2rem; }
+    .rec-badge {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; border-radius: 980px; white-space: nowrap;
+      color: var(--joule); background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3);
+    }
+    .joule-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; margin-top: 0.7rem; display: inline-flex; gap: 0.3rem; }
+    .joule-link:hover { text-decoration: underline; }
+
+    /* Storage Capacity Bars */
+    .storage-items { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    .storage-item {
+      display: grid; grid-template-columns: 140px 1fr 120px; gap: 1rem; align-items: center;
+    }
+    .storage-label { font-size: 0.8rem; font-weight: 500; }
+    .storage-bar { position: relative; height: 24px; background: var(--panel-2); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+    .storage-fill { height: 100%; border-radius: 6px; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 0.7rem; font-weight: 600; color: white; }
+    .storage-fill.red { background: var(--red); }
+    .storage-fill.amber { background: var(--watch); }
+    .storage-fill.green { background: var(--good); }
+    .storage-fill.gray { background: #d1d5db; color: var(--text-3); }
+    .storage-stats { font-size: 0.76rem; font-family: 'JetBrains Mono', monospace; color: var(--text-2); text-align: right; }
+    .storage-proposed { position: absolute; left: 0; top: 0; height: 100%; border: 2px dashed var(--joule); opacity: 0.5; border-radius: 4px; }
+
+    @media (max-width: 1100px) {
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .putaway-chart, .replen-chart, .aging-table, .joule-panel, .storage-chart { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hleft">
+    <a class="brand" href="#">🏭 Warehouse Operations Agent</a>
+    <span class="divider"></span>
+    <span class="crumb">DC-South · Orlando, FL</span>
+  </div>
+  <nav class="nav">
+    <a href="#">Story</a>
+    <a href="#">Console</a>
+    <a href="#" class="active">Dashboard</a>
+  </nav>
+  <div class="header-right">
+    <button class="toggle-mode" id="toggleMode">Before Joule ↔ After Joule</button>
+    <span class="live"><span class="live-dot"></span>LIVE</span>
+  </div>
+</header>
+
+<div class="alert" id="alertBanner">
+  <div class="alert-inner">
+    <span class="alert-dot"></span>
+    <strong>ACTIVE DISRUPTION</strong> &nbsp;·&nbsp; Emergency stock transfer from DC-North (NY) in progress. 34 inbound trailers, 12 docked. SAP Joule agent monitoring.
+    <span style="margin-left:auto;color:var(--text-3);font-size:0.74rem;">Last Joule action: 08:34 AM</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div>
+    <span class="eyebrow">Live · Wednesday, April 15, 2026</span>
+    <h1>EWM Operations Intelligence</h1>
+    <div class="hero-sub">DC-South Distribution Center · Orlando, FL</div>
+  </div>
+  <div class="hero-right">
+    <span style="font-size: 0.75rem; color: var(--text-3);">Last updated: <span id="updateTime">08:34</span> AM</span>
+    <span class="live"><span class="live-dot"></span>LIVE</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="card kpi critical">
+      <h3>Putaway Utilization</h3>
+      <div class="val" id="kpi-putaway">92%</div>
+      <div class="delta critical" id="kpi-putaway-delta">↑ from 61% (2h ago)</div>
+      <div class="ctx">Storage type ZSTP-01</div>
+    </div>
+    <div class="card kpi critical">
+      <h3>Replenishment WTs/hr</h3>
+      <div class="val" id="kpi-replen">0</div>
+      <div class="delta critical" id="kpi-replen-delta">↓ from 4/hr (baseline)</div>
+      <div class="ctx">ZSTP-01 → ZSTP-02</div>
+    </div>
+    <div class="card kpi at-risk">
+      <h3>Aging Outbound Deliveries</h3>
+      <div class="val" id="kpi-aging">23</div>
+      <div class="delta critical" id="kpi-aging-delta">↑ from 3 (2h ago)</div>
+      <div class="ctx">Past pick SLA window</div>
+    </div>
+    <div class="card kpi critical">
+      <h3>Pick Face Availability</h3>
+      <div class="val" id="kpi-pick">34%</div>
+      <div class="delta critical" id="kpi-pick-delta">↓ from 78% (2h ago)</div>
+      <div class="ctx">ZSTP-02 Case/Each</div>
+    </div>
+  </div>
+
+  <!-- PUTAWAY UTILIZATION CHART -->
+  <div class="card putaway-chart">
+    <h3>ZSTP-01 Full Pallet Utilization · Last 8 Hours</h3>
+    <div class="chart-wrap"><canvas id="chartPutaway"></canvas></div>
+  </div>
+
+  <!-- REPLENISHMENT THROUGHPUT CHART -->
+  <div class="card replen-chart">
+    <h3>Replenishment WTs Generated · Per Hour</h3>
+    <div class="chart-wrap"><canvas id="chartReplen"></canvas></div>
+  </div>
+
+  <!-- AGING TABLE -->
+  <div class="card aging-table">
+    <h3>Outbound Deliveries — Aging Report</h3>
+    <table class="aging">
+      <thead>
+        <tr>
+          <th>Delivery #</th>
+          <th>Customer</th>
+          <th>Sched Pick</th>
+          <th>Status</th>
+          <th>Delay</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OBD-2024-8821</td>
+          <td>Grainger Industrial</td>
+          <td>06:00 AM</td>
+          <td>PICK PENDING</td>
+          <td><span class="delay-text critical">+2h 34m</span></td>
+        </tr>
+        <tr>
+          <td>OBD-2024-8834</td>
+          <td>Amazon Fulfillment</td>
+          <td>06:30 AM</td>
+          <td>PICK PENDING</td>
+          <td><span class="delay-text critical">+2h 04m</span></td>
+        </tr>
+        <tr>
+          <td>OBD-2024-8847</td>
+          <td>HD Supply</td>
+          <td>07:00 AM</td>
+          <td>PICK PENDING</td>
+          <td><span class="delay-text at-risk">+1h 34m</span></td>
+        </tr>
+        <tr>
+          <td>OBD-2024-8851</td>
+          <td>Fastenal</td>
+          <td>07:30 AM</td>
+          <td>PICK PENDING</td>
+          <td><span class="delay-text at-risk">+1h 04m</span></td>
+        </tr>
+        <tr>
+          <td>OBD-2024-8863</td>
+          <td>MSC Industrial</td>
+          <td>08:00 AM</td>
+          <td>PICK PENDING</td>
+          <td><span class="delay-text at-risk">+34m</span></td>
+        </tr>
+        <tr>
+          <td>OBD-2024-8871</td>
+          <td>Anixter</td>
+          <td>08:30 AM</td>
+          <td>PICK PENDING</td>
+          <td><span class="delay-text">+4m</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="aging-note"><strong style="color: var(--text);">+17 more deliveries</strong> at risk · requiring management attention</div>
+  </div>
+
+  <!-- SAP JOULE RECOMMENDATIONS -->
+  <div class="card joule-panel">
+    <h3>SAP Joule — Active Recommendations</h3>
+    <div class="joule-recs">
+      <div class="rec-item">
+        <div>
+          <div class="rec-label">Create Temp Overflow Bins</div>
+          <div class="rec-impact">HIGH IMPACT</div>
+        </div>
+        <div class="rec-badge" id="rec-a-badge">⏳ AWAITING</div>
+      </div>
+      <div class="rec-item">
+        <div>
+          <div class="rec-label">Reprioritize Labor + WTs</div>
+          <div class="rec-impact">HIGH IMPACT</div>
+        </div>
+        <div class="rec-badge" id="rec-b-badge">⏳ AWAITING</div>
+      </div>
+      <div class="rec-item">
+        <div>
+          <div class="rec-label">Increase Replen Quantity</div>
+          <div class="rec-impact">MEDIUM IMPACT</div>
+        </div>
+        <div class="rec-badge" id="rec-c-badge">⏳ AWAITING</div>
+      </div>
+      <div class="rec-item">
+        <div>
+          <div class="rec-label">Authorize Overtime</div>
+          <div class="rec-impact">MEDIUM IMPACT</div>
+        </div>
+        <div class="rec-badge" id="rec-d-badge">⏳ AWAITING</div>
+      </div>
+      <div class="rec-item">
+        <div>
+          <div class="rec-label">Direct Pick Fallback</div>
+          <div class="rec-impact">FALLBACK</div>
+        </div>
+        <div class="rec-badge" id="rec-e-badge">⏳ AWAITING</div>
+      </div>
+    </div>
+    <a href="#" class="joule-link">View in Console <span>→</span></a>
+  </div>
+
+  <!-- STORAGE CAPACITY -->
+  <div class="card storage-chart">
+    <h3>Storage Type Capacity · DC-South Overview</h3>
+    <div class="storage-items">
+      <div class="storage-item">
+        <div class="storage-label">ZSTP-01 Full Pallet</div>
+        <div class="storage-bar">
+          <div class="storage-fill red" id="storage-zstp01" style="width: 92%;">92%</div>
+        </div>
+        <div class="storage-stats" id="stats-zstp01">2,208 / 2,400</div>
+      </div>
+      <div class="storage-item">
+        <div class="storage-label">ZSTP-02 Case/Each</div>
+        <div class="storage-bar">
+          <div class="storage-fill green" id="storage-zstp02" style="width: 34%;">34%</div>
+        </div>
+        <div class="storage-stats" id="stats-zstp02">6,120 / 18,000</div>
+      </div>
+      <div class="storage-item">
+        <div class="storage-label">ZSTP-03 Bulk Flow</div>
+        <div class="storage-bar">
+          <div class="storage-fill amber" id="storage-zstp03" style="width: 67%;">67%</div>
+        </div>
+        <div class="storage-stats" id="stats-zstp03">536 / 800</div>
+      </div>
+      <div class="storage-item">
+        <div class="storage-label">ZSTP-TMP Temp Staging</div>
+        <div class="storage-bar">
+          <div class="storage-fill gray" id="storage-zstp-tmp" style="width: 0%;">0%</div>
+          <div class="storage-proposed" id="proposed-tmp" style="display: none;"></div>
+        </div>
+        <div class="storage-stats" id="stats-zstp-tmp">Not yet activated</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Global state
+  let isAfterJoule = false;
+  let putawayChart = null;
+  let replenChart = null;
+
+  const toggleMode = document.getElementById('toggleMode');
+  toggleMode.addEventListener('click', () => {
+    isAfterJoule = !isAfterJoule;
+    toggleMode.classList.toggle('active');
+    transitionToMode(isAfterJoule);
+  });
+
+  function transitionToMode(afterJoule) {
+    const duration = 600;
+
+    // Update KPIs with animation
+    if (afterJoule) {
+      animateValue('kpi-putaway', 92, 71, duration, '%');
+      document.getElementById('kpi-putaway-delta').textContent = '↓ from 92% · recovery mode';
+      document.getElementById('kpi-putaway-delta').className = 'delta';
+
+      animateValue('kpi-replen', 0, 8, duration, '/hr');
+      document.getElementById('kpi-replen-delta').textContent = '↑ from 0/hr · doubled throughput';
+      document.getElementById('kpi-replen-delta').className = 'delta';
+
+      animateValue('kpi-aging', 23, 4, duration, '');
+      document.getElementById('kpi-aging-delta').textContent = '↓ from 23 · 83% reduction';
+      document.getElementById('kpi-aging-delta').className = 'delta';
+
+      animateValue('kpi-pick', 34, 82, duration, '%');
+      document.getElementById('kpi-pick-delta').textContent = '↑ from 34% · restored';
+      document.getElementById('kpi-pick-delta').className = 'delta';
+
+      // Update KPI card styling
+      document.querySelector('[id="kpi-putaway"]').parentElement.parentElement.classList.remove('critical');
+      document.querySelector('[id="kpi-putaway"]').parentElement.parentElement.classList.add('at-risk');
+      document.querySelector('[id="kpi-replen"]').parentElement.parentElement.classList.remove('critical');
+      document.querySelector('[id="kpi-pick"]').parentElement.parentElement.classList.remove('critical');
+
+      // Update alert banner
+      const alertBanner = document.getElementById('alertBanner');
+      alertBanner.classList.add('recovering');
+      alertBanner.querySelector('.alert-inner').innerHTML = '<span class="alert-dot"></span><strong>RECOVERING</strong> &nbsp;·&nbsp; Joule recommendations executed. KPIs improving. All docked trailers in putaway flow.&nbsp;<span style="margin-left:auto;color:var(--text-3);font-size:0.74rem;">Last Joule action: 08:47 AM</span>';
+
+      // Update recommendation badges
+      document.getElementById('rec-a-badge').textContent = '✓ APPROVED';
+      document.getElementById('rec-a-badge').style.color = 'var(--good)';
+      document.getElementById('rec-a-badge').style.background = 'rgba(10,122,59,0.1)';
+      document.getElementById('rec-a-badge').style.borderColor = 'rgba(10,122,59,0.3)';
+
+      document.getElementById('rec-b-badge').textContent = '✓ APPROVED';
+      document.getElementById('rec-b-badge').style.color = 'var(--good)';
+      document.getElementById('rec-b-badge').style.background = 'rgba(10,122,59,0.1)';
+      document.getElementById('rec-b-badge').style.borderColor = 'rgba(10,122,59,0.3)';
+
+      document.getElementById('rec-c-badge').textContent = '✓ APPROVED';
+      document.getElementById('rec-c-badge').style.color = 'var(--good)';
+      document.getElementById('rec-c-badge').style.background = 'rgba(10,122,59,0.1)';
+      document.getElementById('rec-c-badge').style.borderColor = 'rgba(10,122,59,0.3)';
+
+      // Storage updates
+      updateStorageBar('storage-zstp01', 92, 71, duration, 'amber');
+      updateStorageStats('stats-zstp01', '1,704 / 2,400');
+
+      updateStorageBar('storage-zstp02', 34, 82, duration, 'green');
+      updateStorageStats('stats-zstp02', '14,760 / 18,000');
+
+      // Activate temp staging with proposed line
+      updateStorageBar('storage-zstp-tmp', 0, 45, duration, 'gray');
+      updateStorageStats('stats-zstp-tmp', '450 / 1,000 (proposed)');
+      document.getElementById('proposed-tmp').style.display = 'block';
+
+      // Update charts
+      updateCharts(true);
+
+    } else {
+      animateValue('kpi-putaway', 71, 92, duration, '%');
+      document.getElementById('kpi-putaway-delta').textContent = '↑ from 61% (2h ago)';
+      document.getElementById('kpi-putaway-delta').className = 'delta critical';
+
+      animateValue('kpi-replen', 8, 0, duration, '/hr');
+      document.getElementById('kpi-replen-delta').textContent = '↓ from 4/hr (baseline)';
+      document.getElementById('kpi-replen-delta').className = 'delta critical';
+
+      animateValue('kpi-aging', 4, 23, duration, '');
+      document.getElementById('kpi-aging-delta').textContent = '↑ from 3 (2h ago)';
+      document.getElementById('kpi-aging-delta').className = 'delta critical';
+
+      animateValue('kpi-pick', 82, 34, duration, '%');
+      document.getElementById('kpi-pick-delta').textContent = '↓ from 78% (2h ago)';
+      document.getElementById('kpi-pick-delta').className = 'delta critical';
+
+      // Update KPI card styling
+      document.querySelector('[id="kpi-putaway"]').parentElement.parentElement.classList.add('critical');
+      document.querySelector('[id="kpi-putaway"]').parentElement.parentElement.classList.remove('at-risk');
+      document.querySelector('[id="kpi-replen"]').parentElement.parentElement.classList.add('critical');
+      document.querySelector('[id="kpi-pick"]').parentElement.parentElement.classList.add('critical');
+
+      // Update alert banner
+      const alertBanner = document.getElementById('alertBanner');
+      alertBanner.classList.remove('recovering');
+      alertBanner.querySelector('.alert-inner').innerHTML = '<span class="alert-dot"></span><strong>ACTIVE DISRUPTION</strong> &nbsp;·&nbsp; Emergency stock transfer from DC-North (NY) in progress. 34 inbound trailers, 12 docked. SAP Joule agent monitoring.&nbsp;<span style="margin-left:auto;color:var(--text-3);font-size:0.74rem;">Last Joule action: 08:34 AM</span>';
+
+      // Update recommendation badges
+      document.getElementById('rec-a-badge').textContent = '⏳ AWAITING';
+      document.getElementById('rec-a-badge').style.color = 'var(--joule)';
+      document.getElementById('rec-a-badge').style.background = 'rgba(124,58,237,0.1)';
+      document.getElementById('rec-a-badge').style.borderColor = 'rgba(124,58,237,0.3)';
+
+      document.getElementById('rec-b-badge').textContent = '⏳ AWAITING';
+      document.getElementById('rec-b-badge').style.color = 'var(--joule)';
+      document.getElementById('rec-b-badge').style.background = 'rgba(124,58,237,0.1)';
+      document.getElementById('rec-b-badge').style.borderColor = 'rgba(124,58,237,0.3)';
+
+      document.getElementById('rec-c-badge').textContent = '⏳ AWAITING';
+      document.getElementById('rec-c-badge').style.color = 'var(--joule)';
+      document.getElementById('rec-c-badge').style.background = 'rgba(124,58,237,0.1)';
+      document.getElementById('rec-c-badge').style.borderColor = 'rgba(124,58,237,0.3)';
+
+      // Storage updates
+      updateStorageBar('storage-zstp01', 71, 92, duration, 'red');
+      updateStorageStats('stats-zstp01', '2,208 / 2,400');
+
+      updateStorageBar('storage-zstp02', 82, 34, duration, 'green');
+      updateStorageStats('stats-zstp02', '6,120 / 18,000');
+
+      // Deactivate temp staging
+      updateStorageBar('storage-zstp-tmp', 45, 0, duration, 'gray');
+      updateStorageStats('stats-zstp-tmp', 'Not yet activated');
+      document.getElementById('proposed-tmp').style.display = 'none';
+
+      // Update charts
+      updateCharts(false);
+    }
+  }
+
+  function animateValue(elementId, fromVal, toVal, duration, suffix) {
+    const element = document.getElementById(elementId);
+    const start = parseFloat(fromVal);
+    const end = parseFloat(toVal);
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = start + (end - start) * easeOut;
+
+      if (suffix === '%' || suffix === '/hr') {
+        element.textContent = Math.round(current) + suffix;
+      } else {
+        element.textContent = Math.round(current);
+      }
+
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    animate();
+  }
+
+  function updateStorageBar(elementId, fromWidth, toWidth, duration, newColor) {
+    const element = document.getElementById(elementId);
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const currentWidth = fromWidth + (toWidth - fromWidth) * easeOut;
+
+      element.style.width = currentWidth + '%';
+      element.textContent = Math.round(currentWidth) + '%';
+
+      if (progress >= 0.95) {
+        element.className = 'storage-fill ' + newColor;
+      }
+
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    animate();
+  }
+
+  function updateStorageStats(elementId, newStats) {
+    const element = document.getElementById(elementId);
+    element.textContent = newStats;
+  }
+
+  function updateCharts(afterJoule) {
+    if (putawayChart) {
+      putawayChart.data.datasets[0].data = afterJoule ? [45, 47, 46, 48, 52, 61, 58, 71, 69, 71] : [45, 47, 46, 48, 52, 61, 73, 84, 92, 92];
+      putawayChart.update('active');
+    }
+
+    if (replenChart) {
+      replenChart.data.datasets[0].data = afterJoule ? [4, 4, 5, 4, 4, 4, 3, 2, 8, 8] : [4, 4, 5, 4, 4, 4, 3, 2, 0, 0];
+      replenChart.update('active');
+    }
+  }
+
+  // Initialize charts
+  const ctxPutaway = document.getElementById('chartPutaway').getContext('2d');
+  const gradientPutaway = ctxPutaway.createLinearGradient(0, 0, 0, 210);
+  gradientPutaway.addColorStop(0, 'rgba(185,28,28,0.3)');
+  gradientPutaway.addColorStop(1, 'rgba(185,28,28,0.01)');
+
+  putawayChart = new Chart(ctxPutaway, {
+    type: 'line',
+    data: {
+      labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', 'NOW'],
+      datasets: [{
+        label: 'Utilization %',
+        data: [45, 47, 46, 48, 52, 61, 73, 84, 92, 92],
+        borderColor: '#b91c1c',
+        backgroundColor: gradientPutaway,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#b91c1c',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => `${c.raw}% utilization`,
+          },
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          padding: 12,
+          titleFont: { size: 12 },
+          bodyFont: { size: 11, family: "'JetBrains Mono', monospace" },
+          borderRadius: 8,
+          displayColors: false,
+        },
+        annotation: {
+          drawTime: 'beforeDatasetsDraw',
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#6e6e73', font: { size: 11 } },
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+          ticks: { color: '#6e6e73', font: { size: 11 }, callback: v => v + '%' },
+          min: 0,
+          max: 100,
+        },
+      },
+    },
+    plugins: [{
+      id: 'verticalLinePlugin',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+
+        // Storm Alert line at 06:14
+        const x1 = xScale.getPixelForValue(6.24);
+        ctx.strokeStyle = 'rgba(185,28,28,0.4)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x1, yScale.top);
+        ctx.lineTo(x1, yScale.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(185,28,28,0.6)';
+        ctx.font = '11px SF Pro Text';
+        ctx.fillText('Storm Alert', x1 - 25, yScale.top - 8);
+
+        // Trailers Docked line at 08:17
+        const x2 = xScale.getPixelForValue(8.28);
+        ctx.strokeStyle = 'rgba(185,28,28,0.4)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x2, yScale.top);
+        ctx.lineTo(x2, yScale.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(185,28,28,0.6)';
+        ctx.font = '11px SF Pro Text';
+        ctx.fillText('Trailers Docked', x2 - 35, yScale.top - 8);
+      }
+    }],
+  });
+
+  // Replenishment chart with dynamic colors
+  const ctxReplen = document.getElementById('chartReplen').getContext('2d');
+  replenChart = new Chart(ctxReplen, {
+    type: 'bar',
+    data: {
+      labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00'],
+      datasets: [{
+        label: 'WTs/hour',
+        data: [4, 4, 5, 4, 4, 4, 3, 2, 0],
+        backgroundColor: ['#0a7a3b', '#0a7a3b', '#0a7a3b', '#0a7a3b', '#0a7a3b', '#0a7a3b', '#c2410c', '#c2410c', '#b91c1c'],
+        borderRadius: 4,
+        borderSkipped: false,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => `${c.raw} WTs/hour`,
+          },
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          padding: 12,
+          titleFont: { size: 12 },
+          bodyFont: { size: 11, family: "'JetBrains Mono', monospace" },
+          borderRadius: 8,
+          displayColors: false,
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#6e6e73', font: { size: 11 } },
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+          ticks: { color: '#6e6e73', font: { size: 11 } },
+          min: 0,
+          max: 9,
+        },
+      },
+    },
+    plugins: [{
+      id: 'baselinePlugin',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+
+        // Baseline line at 4 WTs/hr
+        const y = yScale.getPixelForValue(4);
+        ctx.strokeStyle = 'rgba(10,122,59,0.3)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth: 1;
+        ctx.beginPath();
+        ctx.moveTo(xScale.left, y);
+        ctx.lineTo(xScale.right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(10,122,59,0.5)';
+        ctx.font = '10px SF Pro Text';
+        ctx.fillText('Baseline: 4 WTs/hr', xScale.left + 8, y - 8);
+      }
+    }],
+  });
+</script>
+
+</body>
+</html>
